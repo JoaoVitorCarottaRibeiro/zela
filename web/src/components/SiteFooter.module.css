@@ -1,0 +1,93 @@
+.rodape {
+  background: var(--fundo-azul);
+  color: #c7d8e6;
+  margin-top: 0;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-block: 60px 48px;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.nome {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+}
+.sobre {
+  color: #a9c0d3;
+  font-size: 0.96rem;
+  max-width: 330px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.col a {
+  color: #c7d8e6;
+  font-size: 0.96rem;
+}
+.col a:hover {
+  color: #fff;
+}
+.colTitulo {
+  color: #fff;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.emergencia,
+.nota {
+  color: #a9c0d3;
+  font-size: 0.92rem;
+}
+.emergencia strong {
+  color: #fff;
+}
+
+.base {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.baseInterno {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 20px;
+  font-size: 0.86rem;
+  color: #91a9bd;
+}
+.aviso {
+  text-align: right;
+}
+
+@media (max-width: 860px) {
+  .grade {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .baseInterno {
+    flex-direction: column;
+    text-align: center;
+  }
+  .aviso {
+    text-align: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}

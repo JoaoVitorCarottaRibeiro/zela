@@ -1,0 +1,11 @@
+# Ambiente e segredos
+.env
+.venv/
+
+# E-mails simulados (modo dev, sem SMTP)
+emails_dev.log
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/

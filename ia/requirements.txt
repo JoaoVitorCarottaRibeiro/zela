@@ -1,0 +1,24 @@
+# API
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-dotenv
+python-multipart
+
+# Banco de dados (SOA) — Supabase/PostgreSQL + migrações
+sqlalchemy>=2.0
+alembic
+psycopg[binary]
+
+# Testes
+pytest
+
+# IA online (free tier) — voz, visão e triagem num só modelo
+google-genai
+
+# IA offline / local
+faster-whisper        # fala -> texto (STT), roda local
+# Piper (texto -> voz, TTS offline) é um binário: ver README.md
+# httpx para chamar outras APIs gratuitas (Groq, OpenRouter) se quiser redundância
+httpx

@@ -1,0 +1,220 @@
+.tela {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(32px, 6vw, 72px) 20px;
+  background:
+    radial-gradient(640px 320px at 80% -10%, rgba(75, 185, 250, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--topo-azul), #ffffff 70%);
+}
+
+.cartao {
+  width: 100%;
+  max-width: 460px;
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra);
+  padding: clamp(28px, 4vw, 40px);
+}
+
+.topo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.simbolo {
+  margin: 0 auto 14px;
+}
+.titulo {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+.subtitulo {
+  color: var(--texto-suave);
+  font-size: 0.98rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.dupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.rotulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--tinta);
+}
+.opcional {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+.obrigatorio {
+  color: var(--vermelho);
+  font-weight: 700;
+  margin-left: 1px;
+}
+.input {
+  width: 100%;
+  font-family: var(--fonte);
+  font-size: 1rem;
+  color: var(--tinta);
+  background: #fff;
+  border: 1.5px solid var(--linha);
+  border-radius: var(--raio-sm);
+  padding: 12px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 4px rgba(75, 185, 250, 0.16);
+}
+.ajuda {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+/* divisória de seção dentro do formulário (ex.: Endereço) */
+.secao {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linha);
+}
+.secaoTitulo {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--tinta);
+}
+.secaoAjuda {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  margin-top: -6px;
+}
+.inputUf {
+  max-width: 120px;
+  text-transform: uppercase;
+}
+
+/* medidor de força da senha */
+.forca {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.forcaBarras {
+  display: flex;
+  gap: 5px;
+}
+.forcaSeg {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--linha);
+  transition: background-color 0.2s ease;
+}
+.forcaRotulo {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.erro {
+  background: var(--vermelho-suave);
+  color: #a3303c;
+  border: 1px solid rgba(210, 59, 74, 0.25);
+  border-radius: var(--raio-sm);
+  padding: 11px 14px;
+  font-size: 0.92rem;
+}
+.sucesso {
+  background: var(--verde-suave, #e6f6ec);
+  color: #1b6b43;
+  border: 1px solid rgba(34, 153, 84, 0.28);
+  border-radius: var(--raio-sm);
+  padding: 13px 16px;
+  font-size: 0.95rem;
+}
+
+.enviar {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* linha do rótulo com o link "Esqueci minha senha" à direita */
+.rotuloLinha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.esqueci {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--azul);
+}
+/* link "Esqueci minha senha", alinhado à direita abaixo do input de senha */
+.esqueciLinha {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+/* bloco de urgência, logo abaixo do botão Entrar */
+.urgenciaBloco {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linha);
+  text-align: center;
+}
+.urgencia {
+  display: block;
+  width: 100%;
+  padding: 12px 22px;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: #a3303c;
+  background: var(--vermelho-suave);
+  border: 1.5px solid rgba(210, 59, 74, 0.35);
+  border-radius: var(--raio-sm);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.urgencia:hover {
+  background: #fdecec;
+  border-color: rgba(210, 59, 74, 0.55);
+  text-decoration: none;
+}
+.urgenciaAjuda {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #a3303c;
+}
+
+.rodape {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--texto-suave);
+}
+.rodape a {
+  font-weight: 600;
+}
+
+@media (max-width: 460px) {
+  .dupla {
+    grid-template-columns: 1fr;
+  }
+}

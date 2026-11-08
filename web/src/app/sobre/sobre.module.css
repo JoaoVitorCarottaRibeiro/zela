@@ -1,0 +1,148 @@
+.topo {
+  background:
+    radial-gradient(700px 360px at 80% -20%, rgba(75, 185, 250, 0.16), transparent 60%),
+    var(--fundo-suave);
+  border-bottom: 1px solid var(--linha);
+}
+.topoInterno {
+  text-align: center;
+  padding-block: clamp(44px, 6vw, 76px);
+  max-width: 720px;
+}
+.subtitulo {
+  margin-top: 16px;
+  color: var(--texto-suave);
+  font-size: 1.1rem;
+}
+
+.duas {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  align-items: start;
+}
+.h2 {
+  margin-bottom: 18px;
+}
+.paragrafo {
+  color: var(--texto);
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+}
+
+.persona {
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra);
+  padding: 32px 30px;
+}
+.personaTag {
+  display: inline-block;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--azul-escuro);
+  background: var(--fundo-suave);
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 16px;
+}
+.personaNome {
+  font-size: 1.35rem;
+  margin-bottom: 12px;
+}
+.personaTexto {
+  color: var(--texto);
+  font-size: 1rem;
+}
+.personaNota {
+  margin-top: 16px;
+  color: var(--texto-suave);
+  font-size: 0.86rem;
+}
+
+.valores {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.valor {
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 30px 28px;
+}
+.valor h3 {
+  margin-bottom: 10px;
+}
+.valor p {
+  color: var(--texto-suave);
+  font-size: 0.98rem;
+}
+
+.ods {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.odsItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 22px 24px;
+}
+.odsNumero {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--azul-escuro);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+.odsNome {
+  font-weight: 600;
+  color: var(--tinta);
+  font-size: 0.98rem;
+}
+
+.cta {
+  text-align: center;
+  max-width: 560px;
+  margin-inline: auto;
+}
+.cta h2 {
+  margin-bottom: 12px;
+}
+.cta p {
+  color: var(--texto-suave);
+  margin-bottom: 26px;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 900px) {
+  .duas {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .valores {
+    grid-template-columns: 1fr;
+  }
+  .ods {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .ods {
+    grid-template-columns: 1fr;
+  }
+}

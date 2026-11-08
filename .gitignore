@@ -1,0 +1,34 @@
+# Dependências
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Builds
+dist/
+build/
+.expo/
+.next/
+out/
+
+# Ambiente / segredos
+.env
+.env.local
+*.local
+
+# Modelos de IA e Piper baixados (pesados — não versionar)
+ia/models/
+ia/piper/
+*.onnx
+*.bin
+*.gguf
+
+# Banco SQLite local (fallback de dev/testes)
+*.db
+ia/zela.db
+
+# Logs e SO
+*.log
+.DS_Store
+Thumbs.db

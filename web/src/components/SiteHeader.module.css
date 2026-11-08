@@ -1,0 +1,221 @@
+.cabecalho {
+  position: relative;
+  z-index: 50;
+  background: var(--topo-azul);
+  border-bottom: 1px solid transparent;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72px;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.marca:hover {
+  text-decoration: none;
+}
+.simbolo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+.nome {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--azul-escuro);
+  letter-spacing: -0.02em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.link {
+  color: var(--tinta);
+  font-weight: 500;
+  font-size: 0.98rem;
+  padding-block: 6px;
+}
+.link:hover {
+  color: var(--azul-escuro);
+  text-decoration: none;
+}
+.linkAtivo {
+  color: var(--azul-escuro);
+  font-weight: 600;
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cta {
+  padding: 11px 22px;
+  font-size: 0.95rem;
+}
+
+/* conta do usuário logado — avatar + menu suspenso */
+.usuario {
+  position: relative;
+}
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--azul), var(--azul-escuro));
+  color: #fff;
+  font-family: var(--fonte);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(16, 42, 67, 0.16);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.avatar:hover {
+  box-shadow: 0 2px 10px rgba(16, 42, 67, 0.24);
+  transform: translateY(-1px);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 190px;
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  box-shadow: var(--sombra);
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 60;
+}
+.menuAberto {
+  display: flex;
+}
+.menuNome {
+  padding: 8px 12px 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--texto-suave);
+  border-bottom: 1px solid var(--linha);
+  margin-bottom: 4px;
+}
+.menuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--raio-sm);
+  background: none;
+  font-family: var(--fonte);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--tinta);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.menuItem:hover {
+  background: var(--topo-azul);
+  color: var(--azul-escuro);
+  text-decoration: none;
+}
+.menuSair {
+  color: #a3303c;
+}
+.menuSair:hover {
+  background: var(--vermelho-suave);
+  color: #a3303c;
+}
+
+.menuBotao {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: 0;
+  padding: 8px;
+  cursor: pointer;
+}
+.menuBarra {
+  width: 24px;
+  height: 2px;
+  background: var(--tinta);
+  border-radius: 2px;
+}
+
+@media (max-width: 860px) {
+  .menuBotao {
+    display: flex;
+  }
+  .nav {
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    background: #fff;
+    border-bottom: 1px solid var(--linha);
+    padding: 16px 24px 24px;
+    box-shadow: var(--sombra);
+    display: none;
+  }
+  .navAberta {
+    display: flex;
+  }
+  .link {
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--linha);
+  }
+  .acoes {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 14px;
+    width: 100%;
+  }
+  .cta {
+    width: 100%;
+  }
+  /* no mobile o menu da conta abre em linha, dentro do painel */
+  .usuario {
+    margin-top: 14px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .menu {
+    position: static;
+    width: 100%;
+    border: 0;
+    box-shadow: none;
+    padding: 8px 0 0;
+    min-width: 0;
+  }
+  .menuItem {
+    padding: 12px;
+  }
+}

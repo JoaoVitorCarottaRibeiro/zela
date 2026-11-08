@@ -1,0 +1,32 @@
+.topo {
+  background:
+    radial-gradient(700px 360px at 80% -20%, rgba(75, 185, 250, 0.16), transparent 60%),
+    var(--fundo-suave);
+  border-bottom: 1px solid var(--linha);
+}
+.topoInterno {
+  text-align: center;
+  padding-block: clamp(44px, 6vw, 72px);
+  max-width: 680px;
+}
+.ola {
+  margin-bottom: 10px;
+  font-size: clamp(2.1rem, 4.6vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+}
+.ola strong {
+  color: inherit;
+  font-weight: 700;
+}
+.subtitulo {
+  margin-top: 16px;
+  color: var(--texto-suave);
+  font-size: 1.08rem;
+}
+
+.corpo {
+  padding-block: clamp(40px, 6vw, 72px);
+}

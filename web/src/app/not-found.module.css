@@ -1,0 +1,99 @@
+.tela {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  background: linear-gradient(180deg, var(--topo-azul) 0%, #eef6fe 45%, #ffffff 100%);
+}
+
+.conteudo {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  padding-top: clamp(40px, 7vw, 90px);
+  padding-bottom: clamp(40px, 7vw, 90px);
+  text-align: center;
+  margin-inline: auto;
+}
+
+.numero {
+  display: block;
+  font-size: clamp(5rem, 16vw, 9rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--azul);
+  opacity: 0.22;
+  margin-bottom: 8px;
+}
+
+.titulo {
+  margin-top: 10px;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.texto {
+  margin: 14px auto 0;
+  max-width: 480px;
+  color: var(--texto-suave);
+  font-size: 1.04rem;
+  line-height: 1.6;
+}
+
+.acoes {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.urgencia {
+  margin-top: 22px;
+  font-size: 0.92rem;
+  color: var(--texto-suave);
+}
+.urgencia a {
+  font-weight: 600;
+  color: var(--azul);
+}
+
+/* ---- formas geométricas de fundo ---- */
+.forma {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  pointer-events: none;
+}
+.circulo {
+  width: clamp(220px, 34vw, 420px);
+  height: clamp(220px, 34vw, 420px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(75, 185, 250, 0.22), rgba(75, 185, 250, 0.05));
+  top: -120px;
+  right: -90px;
+}
+.anel {
+  width: clamp(160px, 22vw, 280px);
+  height: clamp(160px, 22vw, 280px);
+  border-radius: 50%;
+  border: 2px solid rgba(75, 185, 250, 0.25);
+  bottom: -70px;
+  left: -60px;
+}
+.bloco {
+  width: clamp(90px, 12vw, 150px);
+  height: clamp(90px, 12vw, 150px);
+  border-radius: 28px;
+  background: rgba(16, 42, 67, 0.05);
+  bottom: 40px;
+  right: 8%;
+  transform: rotate(18deg);
+}
+
+@media (max-width: 640px) {
+  .bloco {
+    display: none;
+  }
+}

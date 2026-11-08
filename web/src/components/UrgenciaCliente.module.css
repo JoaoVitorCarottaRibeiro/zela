@@ -1,0 +1,32 @@
+.topo {
+  background: var(--topo-azul);
+  border-bottom: 1px solid var(--linha);
+  padding: clamp(32px, 5vw, 56px) 0;
+}
+.topoInterno {
+  max-width: 760px;
+}
+.subtitulo {
+  margin-top: 10px;
+  color: var(--texto-suave);
+  font-size: 1.02rem;
+  max-width: 620px;
+}
+
+.corpo {
+  padding: clamp(28px, 4vw, 48px) 0 clamp(48px, 6vw, 80px);
+}
+
+.aviso {
+  background: var(--topo-azul);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  padding: 13px 16px;
+  margin-bottom: 20px;
+  font-size: 0.92rem;
+  color: var(--texto-suave);
+}
+.aviso a {
+  font-weight: 600;
+  color: var(--azul);
+}

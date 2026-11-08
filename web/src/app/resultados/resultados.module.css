@@ -1,0 +1,19 @@
+.topo {
+  background:
+    radial-gradient(640px 320px at 82% -20%, rgba(75, 185, 250, 0.14), transparent 60%),
+    var(--topo-azul);
+  border-bottom: 1px solid var(--linha);
+}
+.topoInterno {
+  text-align: center;
+  padding-block: clamp(40px, 6vw, 68px);
+  max-width: 680px;
+}
+.subtitulo {
+  margin-top: 14px;
+  color: var(--texto-suave);
+  font-size: 1.06rem;
+}
+.corpo {
+  padding-block: clamp(36px, 6vw, 64px);
+}
