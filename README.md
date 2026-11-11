@@ -27,30 +27,12 @@ Princípio que guia o projeto: **não exige smartphone, não exige saber ler e n
 5. **Quem participa do ecossistema?** Cidadão, agente comunitário de saúde (ACS), UBS/telessaúde e SAMU.
 6. **Como medir e ampliar o impacto?** Nº de triagens, % de casos resolvidos sem deslocamento, tempo até a orientação e encaminhamentos corretos.
 
-## Ficha da CitizenTech
-
-| Campo | Conteúdo |
-| --- | --- |
-| **Nome** | Zela |
-| **Cidade e bairro** | São Paulo, Vila Andrade |
-| **Cidadão beneficiado** | Regina (persona), 53 anos, na fila do SUS sem previsão de atendimento |
-| **Problema (1 frase)** | A pessoa não sabe se o caso é leve, se deve ir à UBS ou se é emergência, e espera sem orientação. |
-| **Como funciona** | A triagem começa no próprio cidadão (voz, foto ou conversa com IA) e só encaminha a um humano quem precisa. |
-| **O que cada parte faz** | `ia/` serve a IA e a API REST; `mobile/` é o app do cidadão; `ia/app/seguranca/` protege os dados de saúde. |
-| **Link do repositório** | https://github.com/JoaoVitorCarottaRibeiro/zela |
-| **Indicador de impacto** | Nº de triagens, % resolvidas sem deslocamento, tempo até orientação, encaminhamentos por nível. |
-| **ODS conectados** | 3, 10, 9 e 11 (explicados abaixo). |
-
 ## ODS (identificados e explicados)
 
 - **ODS 3 — Saúde e bem-estar:** a Zela orienta e prioriza o acesso à saúde, reduzindo a demora até a orientação correta e evitando que casos graves esperem.
 - **ODS 10 — Redução das desigualdades:** atende quem tem menos acesso (baixa alfabetização, internet ruim), funcionando por voz e sem exigir smartphone nem leitura.
 - **ODS 9 — Inovação e infraestrutura:** usa IA e uma infraestrutura leve (modo offline com regras e Piper) que roda até em hardware simples.
 - **ODS 11 — Cidades e comunidades sustentáveis:** conecta o cidadão aos serviços públicos locais (UBS, UPA, SAMU), inclusive por um mapa de unidades públicas próximas.
-
-## Dados e privacidade
-
-**Nenhum dado pessoal real é usado.** Os cidadãos de exemplo são **fictícios** (seed versionado na migração `a1b2c3d4e5f6`). Origem dos dados:
 
 - **Unidades de saúde no mapa:** OpenStreetMap, via Overpass API (dados públicos), filtrando só unidades públicas (UBS, UPA, postos).
 - **IA de triagem, conversa e visão:** Google Gemini (free tier).
