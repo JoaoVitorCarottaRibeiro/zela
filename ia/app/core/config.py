@@ -6,7 +6,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-flash-lite-latest"
+    # Nomes de modelo mudam com o tempo; se der 404, liste os válidos com
+    # client.models.list() e ajuste aqui / no .env.
+    gemini_model: str = "gemini-3.5-flash-lite"
     whisper_model: str = "small"
 
     groq_api_key: str = ""

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import estilos from "./sobre.module.css";
 import { IconeSeta } from "@/components/Icones";
 
@@ -9,23 +10,15 @@ export const metadata: Metadata = {
     "A Zela é uma solução CitizenTech de triagem e orientação em saúde para comunidades, construída para a Global Solution 2026 da FIAP.",
 };
 
-const ODS = [
-  { numero: "3", nome: "Saúde e bem-estar" },
-  { numero: "10", nome: "Redução das desigualdades" },
-  { numero: "9", nome: "Indústria, inovação e infraestrutura" },
-  { numero: "11", nome: "Cidades e comunidades sustentáveis" },
-];
-
 export default function PaginaSobre() {
   return (
     <>
       <section className={estilos.topo}>
         <div className={`container ${estilos.topoInterno}`}>
-          <span className="sobrelinha">Sobre o projeto</span>
           <h1>Saúde que chega primeiro a quem mais precisa</h1>
           <p className={estilos.subtitulo}>
             A Zela nasce para encurtar a distância entre sentir um sintoma e
-            saber o que fazer — especialmente para quem enfrenta fila, falta de
+            saber o que fazer. Especialmente para quem enfrenta fila, falta de
             acesso e pouca informação.
           </p>
         </div>
@@ -34,12 +27,22 @@ export default function PaginaSobre() {
       <section className="secao">
         <div className={`container ${estilos.duas}`}>
           <div>
-            <span className="sobrelinha">O problema</span>
             <h2 className={estilos.h2}>Esperar sem saber é perigoso</h2>
             <p className={estilos.paragrafo}>
               Muita gente espera meses por uma consulta sem saber se o caso é
               simples ou grave. Sem orientação, um problema pequeno vira
-              emergência — e quem tem menos acesso é quem mais perde.
+              emergência, e quem tem menos acesso é quem mais perde.
+            </p>
+            <p className={estilos.paragrafo}>
+              Num sistema de saúde sobrecarregado, macas se acumulam nos
+              corredores e cada minuto é disputado. No meio disso, a pessoa fica
+              sem saber a quem recorrer: pergunta ao vizinho, pesquisa na
+              internet e segue sem uma resposta em que possa confiar.
+            </p>
+            <p className={estilos.paragrafo}>
+              A dúvida também paralisa. Com medo de incomodar à toa ou de perder
+              um dia inteiro numa fila, muita gente adia e deixa o corpo decidir
+              sozinho a hora de buscar ajuda.
             </p>
             <p className={estilos.paragrafo}>
               A Zela organiza esse caminho: ouve a pessoa onde ela está, avalia
@@ -48,23 +51,19 @@ export default function PaginaSobre() {
             </p>
           </div>
 
-          <aside className={estilos.persona}>
-            <span className={estilos.personaTag}>Para quem é — exemplo</span>
-            <h3 className={estilos.personaNome}>Regina, 53 anos</h3>
-            <p className={estilos.personaTexto}>
-              Mora em Vila Andrade, São Paulo. Está na fila do SUS há meses, sem
-              previsão de atendimento. Quando sente algo, não sabe se espera ou
-              se procura ajuda. Com a Zela, ela conta o sintoma por voz e recebe
-              uma orientação clara — e, se for urgente, é priorizada.
-            </p>
-            <p className={estilos.personaNota}>
-              Persona ilustrativa. A Zela usa apenas dados fictícios e públicos.
-            </p>
-          </aside>
+          <figure className={estilos.foto}>
+            <Image
+              src="/sobre/regina.jpg"
+              alt="Moradora de comunidade sorrindo no quintal de casa"
+              fill
+              sizes="(max-width: 900px) 100vw, 40vw"
+              style={{ objectFit: "cover" }}
+            />
+          </figure>
         </div>
       </section>
 
-      <section className="secao secao--suave">
+      <section className={`secao ${estilos.compromissos}`}>
         <div className="container">
           <div className="secao__titulo">
             <span className="sobrelinha">Compromissos</span>
@@ -81,34 +80,17 @@ export default function PaginaSobre() {
             <div className={estilos.valor}>
               <h3>A IA orienta, não decide</h3>
               <p>
-                A inteligência artificial prioriza e explica — o diagnóstico e a
+                A inteligência artificial prioriza e explica. O diagnóstico e a
                 prescrição são sempre de um profissional de saúde.
               </p>
             </div>
             <div className={estilos.valor}>
-              <h3>Privacidade e dados mínimos</h3>
+              <h3>Privacidade por princípio</h3>
               <p>
-                Coletamos apenas o necessário para orientar. No projeto, todos
-                os dados são fictícios.
+                Dado de saúde é sensível. Fica protegido, só a própria pessoa
+                acessa a sua ficha e nada é guardado sem o seu consentimento.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="secao">
-        <div className="container">
-          <div className="secao__titulo">
-            <span className="sobrelinha">Agenda 2030</span>
-            <h2>Objetivos de Desenvolvimento Sustentável</h2>
-          </div>
-          <div className={estilos.ods}>
-            {ODS.map(({ numero, nome }) => (
-              <div key={numero} className={estilos.odsItem}>
-                <span className={estilos.odsNumero}>{numero}</span>
-                <span className={estilos.odsNome}>{nome}</span>
-              </div>
-            ))}
           </div>
         </div>
       </section>

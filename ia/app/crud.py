@@ -15,6 +15,7 @@ from app.core.security import hash_senha
 from app.models.cidadao import Cidadao
 from app.models.encaminhamento import Encaminhamento
 from app.models.enums import Destino, Nivel, StatusEncaminhamento
+from app.models.exame_analise import ExameAnalise
 from app.models.ficha_medica import FichaMedica
 from app.models.triagem import Triagem
 from app.models.usuario import Usuario
@@ -25,16 +26,15 @@ from app.schemas import (
     EncaminhamentoUpdate,
     EntradaTriagem,
     PerfilUpdate,
+    ResultadoExame,
+    ResultadoTriagem,
     TriagemCreate,
 )
 from app.services import triagem_service
 
-# Nível de triagem -> destino padrão do encaminhamento
-DESTINO_POR_NIVEL: dict[Nivel, Destino] = {
-    Nivel.verde: Destino.casa,
-    Nivel.amarelo: Destino.ubs,
-    Nivel.vermelho: Destino.samu,
-}
+# Regra de negócio (domínio): nível -> destino, e a validação dos sintomas.
+from app.dominio.encaminhamento import DESTINO_POR_NIVEL
+from app.dominio.triagem import validar_sintomas
 
 
 # ----------------------------- Cidadão -----------------------------
@@ -178,6 +178,7 @@ def criar_triagem(
     dados: TriagemCreate,
     usuario_id: int | None = None,
     cpf_informado: str | None = None,
+    resultado: ResultadoTriagem | None = None,
 ) -> Triagem:
     """Registra uma triagem: roda a lógica (regras + IA) e abre o encaminhamento.
 
@@ -185,10 +186,15 @@ def criar_triagem(
     - `cpf_informado` (triagem de urgência, sem login): guarda o CPF para
       vincular depois, quando o dono do CPF fizer login. Só é gravado quando
       não há usuário logado.
+    - `resultado` (opcional): classificação já decidida (ex.: pela triagem
+      conversacional). Se vier, não roda a IA de novo — só persiste e encaminha.
     """
-    resultado = triagem_service.triar(
-        EntradaTriagem(sintomas=dados.sintomas, idade=dados.idade)
-    )
+    # Regra do domínio: exige uma descrição mínima (RegraViolada -> 422).
+    validar_sintomas(dados.sintomas)
+    if resultado is None:
+        resultado = triagem_service.triar(
+            EntradaTriagem(sintomas=dados.sintomas, idade=dados.idade)
+        )
 
     triagem = Triagem(
         cidadao_id=dados.cidadao_id,
@@ -242,6 +248,40 @@ def obter_triagem(db: Session, triagem_id: int) -> Triagem | None:
         .options(selectinload(Triagem.encaminhamentos))
     )
     return db.scalars(stmt).first()
+
+
+# ----------------------- Exame (Entenda seu exame) -----------------------
+def criar_exame(db: Session, usuario_id: int, resultado: ResultadoExame) -> ExameAnalise:
+    """Salva uma análise de exame no histórico do usuário."""
+    exame = ExameAnalise(
+        usuario_id=usuario_id,
+        resumo=resultado.resumo,
+        itens=[i.model_dump() for i in resultado.itens],
+        precisa_cuidado=resultado.precisa_cuidado,
+        nivel=resultado.nivel.value if resultado.nivel else None,
+    )
+    db.add(exame)
+    db.commit()
+    db.refresh(exame)
+    return exame
+
+
+def listar_exames_do_usuario(db: Session, usuario_id: int) -> list[ExameAnalise]:
+    stmt = (
+        select(ExameAnalise)
+        .where(ExameAnalise.usuario_id == usuario_id)
+        .order_by(ExameAnalise.criado_em.desc())
+    )
+    return list(db.scalars(stmt))
+
+
+def obter_exame(db: Session, exame_id: int) -> ExameAnalise | None:
+    return db.get(ExameAnalise, exame_id)
+
+
+def remover_exame(db: Session, exame: ExameAnalise) -> None:
+    db.delete(exame)
+    db.commit()
 
 
 # -------------------------- Encaminhamento --------------------------

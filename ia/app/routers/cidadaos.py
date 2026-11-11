@@ -8,6 +8,9 @@ from app.schemas import CidadaoCreate, CidadaoOut, CidadaoUpdate, TriagemOut
 
 router = APIRouter(prefix="/cidadaos", tags=["cidadãos"])
 
+# Erros documentados no OpenAPI (além do 422 automático de validação).
+RESP_404 = {404: {"description": "Cidadão não encontrado."}}
+
 
 @router.post("", response_model=CidadaoOut, status_code=status.HTTP_201_CREATED)
 def criar(dados: CidadaoCreate, db: Session = Depends(get_db)) -> CidadaoOut:
@@ -19,7 +22,7 @@ def listar(limite: int = 100, offset: int = 0, db: Session = Depends(get_db)) ->
     return crud.listar_cidadaos(db, limite=limite, offset=offset)
 
 
-@router.get("/{cidadao_id}", response_model=CidadaoOut)
+@router.get("/{cidadao_id}", response_model=CidadaoOut, responses=RESP_404)
 def obter(cidadao_id: int, db: Session = Depends(get_db)) -> CidadaoOut:
     cidadao = crud.obter_cidadao(db, cidadao_id)
     if cidadao is None:
@@ -27,7 +30,7 @@ def obter(cidadao_id: int, db: Session = Depends(get_db)) -> CidadaoOut:
     return cidadao
 
 
-@router.put("/{cidadao_id}", response_model=CidadaoOut)
+@router.put("/{cidadao_id}", response_model=CidadaoOut, responses=RESP_404)
 def atualizar(cidadao_id: int, dados: CidadaoUpdate, db: Session = Depends(get_db)) -> CidadaoOut:
     cidadao = crud.obter_cidadao(db, cidadao_id)
     if cidadao is None:
@@ -35,7 +38,7 @@ def atualizar(cidadao_id: int, dados: CidadaoUpdate, db: Session = Depends(get_d
     return crud.atualizar_cidadao(db, cidadao, dados)
 
 
-@router.delete("/{cidadao_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{cidadao_id}", status_code=status.HTTP_204_NO_CONTENT, responses=RESP_404)
 def remover(cidadao_id: int, db: Session = Depends(get_db)) -> None:
     cidadao = crud.obter_cidadao(db, cidadao_id)
     if cidadao is None:
@@ -43,7 +46,7 @@ def remover(cidadao_id: int, db: Session = Depends(get_db)) -> None:
     crud.remover_cidadao(db, cidadao)
 
 
-@router.get("/{cidadao_id}/triagens", response_model=list[TriagemOut])
+@router.get("/{cidadao_id}/triagens", response_model=list[TriagemOut], responses=RESP_404)
 def triagens_do_cidadao(cidadao_id: int, db: Session = Depends(get_db)) -> list[TriagemOut]:
     if crud.obter_cidadao(db, cidadao_id) is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Cidadão não encontrado.")

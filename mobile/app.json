@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Zela",
+    "slug": "zela",
+    "scheme": "zela",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4BB9FA"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "A Zela usa o microfone para você falar os seus sintomas.",
+        "NSPhotoLibraryUsageDescription": "A Zela usa suas fotos para analisar um exame ou um sintoma.",
+        "NSCameraUsageDescription": "A Zela usa a câmera para você fotografar um exame ou um sintoma."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#4BB9FA"
+      },
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "A Zela usa suas fotos para analisar um exame ou um sintoma."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "A Zela usa o microfone para você falar os seus sintomas."
+        }
+      ],
+      "expo-font"
+    ]
+  }
+}

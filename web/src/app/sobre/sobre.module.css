@@ -30,37 +30,28 @@
   margin-bottom: 16px;
 }
 
-.persona {
-  background: #fff;
-  border: 1px solid var(--linha);
+/* Seção "Compromissos" com foto de enfermaria escurecida ao fundo */
+.compromissos {
+  background-image:
+    linear-gradient(rgba(9, 21, 38, 0.82), rgba(9, 21, 38, 0.86)),
+    url("/sobre/enfermaria.jpg");
+  background-size: cover;
+  background-position: center;
+  border-block: 1px solid var(--linha);
+}
+.compromissos :global(.secao__titulo) h2 {
+  color: #fff;
+}
+
+/* Foto (moradora) no lugar do antigo card de persona */
+.foto {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
   border-radius: var(--raio-lg);
+  overflow: hidden;
   box-shadow: var(--sombra);
-  padding: 32px 30px;
-}
-.personaTag {
-  display: inline-block;
-  font-size: 0.74rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--azul-escuro);
-  background: var(--fundo-suave);
-  border-radius: 999px;
-  padding: 6px 14px;
-  margin-bottom: 16px;
-}
-.personaNome {
-  font-size: 1.35rem;
-  margin-bottom: 12px;
-}
-.personaTexto {
-  color: var(--texto);
-  font-size: 1rem;
-}
-.personaNota {
-  margin-top: 16px;
-  color: var(--texto-suave);
-  font-size: 0.86rem;
+  margin: 0;
 }
 
 .valores {
@@ -79,39 +70,6 @@
 }
 .valor p {
   color: var(--texto-suave);
-  font-size: 0.98rem;
-}
-
-.ods {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-.odsItem {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #fff;
-  border: 1px solid var(--linha);
-  border-radius: var(--raio);
-  padding: 22px 24px;
-}
-.odsNumero {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--azul-escuro);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-}
-.odsNome {
-  font-weight: 600;
-  color: var(--tinta);
   font-size: 0.98rem;
 }
 
@@ -135,14 +93,6 @@
     gap: 32px;
   }
   .valores {
-    grid-template-columns: 1fr;
-  }
-  .ods {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (max-width: 520px) {
-  .ods {
     grid-template-columns: 1fr;
   }
 }

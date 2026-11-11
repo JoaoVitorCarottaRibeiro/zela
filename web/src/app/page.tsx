@@ -23,7 +23,7 @@ const CANAIS = [
     Icone: IconeVoz,
     titulo: "Fala e escuta",
     texto:
-      "Prefere falar? A Zela ouve seus sintomas e responde em voz — sem precisar digitar.",
+      "Prefere falar? A Zela ouve seus sintomas e responde em voz, sem precisar digitar.",
   },
   {
     Icone: IconeFoto,
@@ -58,7 +58,7 @@ const PRINCIPIOS = [
     Icone: IconeRede,
     titulo: "Não exige internet rápida nem smartphone",
     texto:
-      "Funciona em cenários simples — pensado para quem tem menos acesso, não mais.",
+      "Funciona em cenários simples, pensado para quem tem menos acesso, não mais.",
   },
   {
     Icone: IconeOuvido,
@@ -80,7 +80,6 @@ export default function Home() {
       <section className={estilos.hero}>
         <div className={`container ${estilos.heroGrade}`}>
           <div className={estilos.heroTexto}>
-            <span className="sobrelinha">CitizenTech · Saúde da comunidade</span>
             <h1>
               Cuidado em saúde que{" "}
               <span className={estilos.destaque}>começa em você</span>
@@ -100,7 +99,7 @@ export default function Home() {
               </Link>
             </div>
             <p className={estilos.heroNota}>
-              A Zela orienta e prioriza — não substitui a avaliação médica.
+              A Zela orienta e prioriza, não substitui a avaliação médica.
             </p>
           </div>
 
@@ -194,7 +193,7 @@ export default function Home() {
               Tecnologia com responsabilidade
             </h2>
             <p className={estilos.eticaTexto}>
-              A Zela usa inteligência artificial para orientar e priorizar — ela
+              A Zela usa inteligência artificial para orientar e priorizar, ela
               não diagnostica nem prescreve. Decisões clínicas são sempre de um
               profissional de saúde. Em caso de risco de vida, ligue para o SAMU
               192.

@@ -1,8 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/lib/auth";
 import estilos from "./SiteFooter.module.css";
 
 export default function SiteFooter() {
+  const { usuario, carregando } = useAuth();
+  // Some para o usuário logado (e enquanto a sessão carrega, para não piscar).
+  if (carregando || usuario) return null;
+
   return (
     <footer className={estilos.rodape}>
       <div className={`container ${estilos.grade}`}>
@@ -17,8 +24,8 @@ export default function SiteFooter() {
             <span className={estilos.nome}>Zela</span>
           </div>
           <p className={estilos.sobre}>
-            Triagem e orientação em saúde para comunidades. Começa na pessoa —
-            por voz, foto ou conversa — e encaminha a um profissional quem
+            Triagem e orientação em saúde para comunidades. Começa na pessoa,
+            por voz, foto ou conversa, e encaminha a um profissional quem
             realmente precisa.
           </p>
         </div>
@@ -38,23 +45,13 @@ export default function SiteFooter() {
             o pronto-socorro mais próximo.
           </p>
         </div>
-
-        <div className={estilos.col}>
-          <h4 className={estilos.colTitulo}>Projeto</h4>
-          <p className={estilos.nota}>
-            Global Solution 2026 · FIAP — Engenharia de Software.
-          </p>
-          <p className={estilos.nota}>
-            Iniciativa CitizenTech. Dados de exemplo e fictícios.
-          </p>
-        </div>
       </div>
 
       <div className={estilos.base}>
         <div className={`container ${estilos.baseInterno}`}>
           <span>© {new Date().getFullYear()} Zela</span>
           <span className={estilos.aviso}>
-            A Zela orienta e prioriza — não realiza diagnóstico nem prescrição.
+            A Zela orienta e prioriza, não substitui a avaliação médica.
           </span>
         </div>
       </div>

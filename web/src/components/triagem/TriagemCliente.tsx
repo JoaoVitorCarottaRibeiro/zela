@@ -1,15 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   analisarFoto,
   ApiError,
-  enviarTriagem,
+  conversarTriagem,
+  falarComPiper,
   transcreverAudio,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import type { Destino, Nivel, ResultadoVisao, Triagem } from "@/lib/tipos";
+import type { Canal, Destino, Nivel, MensagemConversa, Triagem } from "@/lib/tipos";
 import RiskBadge from "@/components/RiskBadge";
 import {
   IconeCasa,
@@ -22,7 +23,15 @@ import {
 } from "@/components/Icones";
 import estilos from "./TriagemCliente.module.css";
 
-type Canal = "texto" | "voz" | "foto";
+type CanalInput = "texto" | "voz" | "foto";
+
+/** Balão exibido na conversa. `local` = só visual, não vai para a IA. */
+interface Balao {
+  autor: "usuario" | "zela";
+  texto: string;
+  fotoUrl?: string;
+  local?: boolean;
+}
 
 /** Idade (anos completos) a partir da data de nascimento (YYYY-MM-DD). */
 function idadeDe(nascimento?: string | null): string {
@@ -36,11 +45,17 @@ function idadeDe(nascimento?: string | null): string {
   return anos >= 0 && anos <= 130 ? String(anos) : "";
 }
 
-const CANAIS: { id: Canal; rotulo: string; Icone: typeof IconeTexto }[] = [
+const CANAIS: { id: CanalInput; rotulo: string; Icone: typeof IconeTexto }[] = [
   { id: "texto", rotulo: "Por texto", Icone: IconeTexto },
   { id: "voz", rotulo: "Por voz", Icone: IconeVoz },
   { id: "foto", rotulo: "Por foto", Icone: IconeFoto },
 ];
+
+const CANAL_API: Record<CanalInput, Canal> = {
+  texto: "app",
+  voz: "voz",
+  foto: "foto",
+};
 
 const DESTINO: Record<
   Destino,
@@ -78,6 +93,44 @@ const TITULO_NIVEL: Record<Nivel, string> = {
   vermelho: "Procure ajuda agora",
 };
 
+const SAUDACAO =
+  "Olá! Sou a Zela. Me conte, com suas palavras, o que você está sentindo. Pode ser por texto, por voz ou enviando uma foto.";
+
+/** Fala um texto usando a síntese do próprio navegador (grátis, sem chave).
+ *  É a alternativa quando o Piper (voz offline melhor) não está instalado. */
+function falarNavegador(texto: string, onFim?: () => void) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    onFim?.();
+    return;
+  }
+  try {
+    window.speechSynthesis.cancel();
+    const fala = new SpeechSynthesisUtterance(texto);
+    fala.lang = "pt-BR";
+    const vozPt = window.speechSynthesis
+      .getVoices()
+      .find((v) => v.lang?.toLowerCase().startsWith("pt"));
+    if (vozPt) fala.voice = vozPt;
+    fala.rate = 1;
+    fala.onend = () => onFim?.();
+    fala.onerror = () => onFim?.();
+    window.speechSynthesis.speak(fala);
+  } catch {
+    /* sem suporte / bloqueado — segue só com o texto na tela */
+    onFim?.();
+  }
+}
+
+function silenciarFala() {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      /* ignora */
+    }
+  }
+}
+
 export default function TriagemCliente({
   cpfConvidado,
 }: {
@@ -85,19 +138,92 @@ export default function TriagemCliente({
   cpfConvidado?: string | null;
 } = {}) {
   const { token, usuario } = useAuth();
-  const [canal, setCanal] = useState<Canal>("texto");
+  const [canal, setCanal] = useState<CanalInput>("texto");
 
-  // Campos compartilhados de texto/voz
-  const [sintomas, setSintomas] = useState("");
-  // A idade NÃO é mais um campo visível: a IA usa a idade já cadastrada
-  // (calculada do nascimento). Na urgência (convidado) não há cadastro → sem idade.
   const idade = cpfConvidado ? "" : idadeDe(usuario?.data_nascimento);
+  const idadeNumero = () => {
+    const n = parseInt(idade, 10);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  };
 
-  // Estado de rede e resultados
+  // Conversa
+  const [baloes, setBaloes] = useState<Balao[]>([
+    { autor: "zela", texto: SAUDACAO, local: true },
+  ]);
+  const [sugestoes, setSugestoes] = useState<string[]>([]);
+  const [entrada, setEntrada] = useState("");
+  const [contextoFoto, setContextoFoto] = useState<string | null>(null);
+  const [triagem, setTriagem] = useState<Triagem | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [triagem, setTriagem] = useState<Triagem | null>(null);
-  const [visao, setVisao] = useState<ResultadoVisao | null>(null);
+  // A Zela lê as respostas em voz alta (ligado por padrão; dá para silenciar).
+  const [ouvir, setOuvir] = useState(true);
+  // Espelho dos balões para ler o histórico atual mesmo dentro de callbacks
+  // assíncronos (ex.: fim da gravação de voz).
+  const baloesRef = useRef<Balao[]>([]);
+  useEffect(() => {
+    baloesRef.current = baloes;
+  }, [baloes]);
+
+  // Saudação inicial personalizada quando o usuário logado carrega (só enquanto
+  // a conversa ainda não começou).
+  useEffect(() => {
+    const nome = usuario?.nome_completo?.trim().split(" ")[0];
+    if (nome && baloesRef.current.length === 1 && baloesRef.current[0].local) {
+      const texto = `Olá, ${nome}! Sou a Zela. Me conte, com suas palavras, o que você está sentindo. Pode ser por texto, por voz ou enviando uma foto.`;
+      const inicio: Balao[] = [{ autor: "zela", texto, local: true }];
+      baloesRef.current = inicio;
+      setBaloes(inicio);
+    }
+  }, [usuario]);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // A Zela está falando agora? Serve para uma fala não sobrepor a outra — em
+  // especial, para "Ouvir de novo" não reiniciar por cima enquanto ela ainda lê.
+  const [falando, setFalando] = useState(false);
+  const falandoRef = useRef(false);
+  function marcarFalando(valor: boolean) {
+    falandoRef.current = valor;
+    setFalando(valor);
+  }
+
+  /** Interrompe qualquer fala em andamento (áudio do Piper ou voz do navegador). */
+  function pararFala() {
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    } catch {
+      /* ignora */
+    }
+    silenciarFala();
+    marcarFalando(false);
+  }
+
+  /** Faz a Zela falar: tenta o Piper (voz offline, melhor) e, se não estiver
+   *  configurado no servidor, usa a voz do próprio navegador. */
+  async function falar(texto: string) {
+    pararFala();
+    marcarFalando(true); // a partir daqui, "Ouvir de novo" não sobrepõe
+    try {
+      const audioBlob = await falarComPiper(texto);
+      if (audioBlob) {
+        const url = URL.createObjectURL(audioBlob);
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          marcarFalando(false);
+        };
+        await audio.play();
+        return;
+      }
+    } catch {
+      /* cai no fallback do navegador */
+    }
+    falarNavegador(texto, () => marcarFalando(false));
+  }
 
   // Voz
   const [gravando, setGravando] = useState(false);
@@ -106,50 +232,59 @@ export default function TriagemCliente({
   const gravadorRef = useRef<MediaRecorder | null>(null);
   const pedacosRef = useRef<Blob[]>([]);
 
-  // Foto
-  const [previa, setPrevia] = useState<string | null>(null);
-  const [nomeFoto, setNomeFoto] = useState<string | null>(null);
-
-  const resultadoRef = useRef<HTMLDivElement | null>(null);
-
-  function rolarAteResultado() {
+  const fimRef = useRef<HTMLDivElement | null>(null);
+  function rolar() {
     requestAnimationFrame(() =>
-      resultadoRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      }),
+      fimRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }),
     );
   }
 
-  function limparResultado() {
-    setTriagem(null);
-    setVisao(null);
-    setErro(null);
+  const encerrado = triagem !== null;
+
+  function historicoDe(lista: Balao[]): MensagemConversa[] {
+    return lista
+      .filter((b) => !b.local && b.texto.trim())
+      .map((b) => ({ autor: b.autor, texto: b.texto }));
   }
 
-  const idadeNumero = () => {
-    const n = parseInt(idade, 10);
-    return Number.isFinite(n) && n >= 0 ? n : null;
-  };
-
-  async function analisarSintomas(origem: "app" | "voz") {
-    if (sintomas.trim().length < 3) {
-      setErro("Conte um pouco mais sobre o que você está sentindo.");
-      return;
+  /** Aplica a resposta da IA (pergunta ou conclusão) à conversa. */
+  function aplicarResposta(r: Awaited<ReturnType<typeof conversarTriagem>>) {
+    if (r.estado === "pergunta" && r.pergunta) {
+      const texto = r.pergunta;
+      setBaloes((b) => [...b, { autor: "zela", texto }]);
+      setSugestoes(r.sugestoes ?? []);
+      if (ouvir) falar(texto);
+    } else if (r.estado === "concluido" && r.triagem) {
+      setTriagem(r.triagem);
+      setSugestoes([]);
+      if (ouvir) {
+        falar(`${TITULO_NIVEL[r.triagem.nivel]}. ${r.triagem.orientacao}`);
+      }
     }
-    limparResultado();
+    rolar();
+  }
+
+  async function enviarTexto(texto: string) {
+    const t = texto.trim();
+    if (!t || carregando || encerrado) return;
+    setErro(null);
+    setSugestoes([]);
+    const novos: Balao[] = [...baloesRef.current, { autor: "usuario", texto: t }];
+    baloesRef.current = novos;
+    setBaloes(novos);
+    setEntrada("");
+    setAvisoVoz(null);
+    rolar();
     setCarregando(true);
     try {
-      const resposta = await enviarTriagem(
-        {
-          sintomas: sintomas.trim(),
-          idade: idadeNumero(),
-          canal: origem,
-        },
-        { token, cpfInformado: cpfConvidado },
-      );
-      setTriagem(resposta);
-      rolarAteResultado();
+      const r = await conversarTriagem(historicoDe(novos), {
+        idade: idadeNumero(),
+        canal: CANAL_API[canal],
+        token,
+        cpfInformado: cpfConvidado,
+        contextoFoto,
+      });
+      aplicarResposta(r);
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : "Algo deu errado. Tente novamente.");
     } finally {
@@ -159,6 +294,7 @@ export default function TriagemCliente({
 
   // ---------------------------------------------------------------- voz
   async function iniciarGravacao() {
+    pararFala(); // não falar por cima de quem está gravando
     setAvisoVoz(null);
     setErro(null);
     try {
@@ -180,7 +316,7 @@ export default function TriagemCliente({
       setGravando(true);
     } catch {
       setAvisoVoz(
-        "Não conseguimos usar o microfone. Você pode enviar um arquivo de áudio ou escrever os sintomas.",
+        "Não conseguimos usar o microfone. Você pode enviar um arquivo de áudio ou escrever.",
       );
     }
   }
@@ -195,13 +331,15 @@ export default function TriagemCliente({
     setErro(null);
     try {
       const r = await transcreverAudio(audio, nome);
-      if (r.texto && r.texto.trim()) {
-        setSintomas(r.texto.trim());
-        setAvisoVoz("Transcrevemos sua fala. Revise o texto e toque em analisar.");
+      const texto = (r.texto || "").trim();
+      if (texto) {
+        // Acessibilidade: envia direto, sem depender de a pessoa ler e confirmar.
+        setAvisoVoz(null);
+        await enviarTexto(texto);
       } else {
-        setAvisoVoz(
-          "Não foi possível entender o áudio. Tente de novo ou escreva os sintomas.",
-        );
+        const msg = "Não consegui entender. Pode falar de novo, por favor?";
+        setAvisoVoz(msg);
+        if (ouvir) falar(msg);
       }
     } catch (e) {
       setErro(e instanceof ApiError ? e.message : "Falha ao transcrever o áudio.");
@@ -218,15 +356,30 @@ export default function TriagemCliente({
   // ---------------------------------------------------------------- foto
   async function aoEscolherFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const arquivo = e.target.files?.[0];
-    if (!arquivo) return;
-    setNomeFoto(arquivo.name);
-    setPrevia(URL.createObjectURL(arquivo));
-    limparResultado();
+    if (!arquivo || carregando || encerrado) return;
+    setErro(null);
+    setSugestoes([]);
+    const url = URL.createObjectURL(arquivo);
+    const novos: Balao[] = [
+      ...baloesRef.current,
+      { autor: "usuario", texto: "Enviei uma foto.", fotoUrl: url },
+    ];
+    baloesRef.current = novos;
+    setBaloes(novos);
+    rolar();
     setCarregando(true);
     try {
-      const r = await analisarFoto(arquivo);
-      setVisao(r);
-      rolarAteResultado();
+      const v = await analisarFoto(arquivo);
+      const ctx = v.descricao;
+      setContextoFoto(ctx);
+      const r = await conversarTriagem(historicoDe(novos), {
+        idade: idadeNumero(),
+        canal: "foto",
+        token,
+        cpfInformado: cpfConvidado,
+        contextoFoto: ctx,
+      });
+      aplicarResposta(r);
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : "Falha ao analisar a foto.");
     } finally {
@@ -234,10 +387,24 @@ export default function TriagemCliente({
     }
   }
 
+  function recomecar() {
+    pararFala();
+    const inicio: Balao[] = [{ autor: "zela", texto: SAUDACAO, local: true }];
+    baloesRef.current = inicio;
+    setBaloes(inicio);
+    setSugestoes([]);
+    setEntrada("");
+    setContextoFoto(null);
+    setTriagem(null);
+    setErro(null);
+    setAvisoVoz(null);
+    setCanal("texto");
+  }
+
   return (
     <div className={estilos.area}>
-      {/* Seletor de canal */}
-      <div className={estilos.abas} role="tablist" aria-label="Como fazer a triagem">
+      {/* Seletor de canal de entrada */}
+      <div className={estilos.abas} role="tablist" aria-label="Como responder">
         {CANAIS.map(({ id, rotulo, Icone }) => (
           <button
             key={id}
@@ -248,6 +415,7 @@ export default function TriagemCliente({
               setCanal(id);
               setErro(null);
             }}
+            disabled={encerrado}
           >
             <Icone className={estilos.abaIcone} aria-hidden />
             {rotulo}
@@ -256,140 +424,57 @@ export default function TriagemCliente({
       </div>
 
       <div className={estilos.painel}>
-        {/* ---------------------------------------------- Texto */}
-        {canal === "texto" && (
-          <div className={estilos.campo}>
-            <h3 className={estilos.campoTitulo}>Descreva o que está sentindo</h3>
-            <p className={estilos.campoAjuda}>
-              Escreva com suas palavras. Quanto mais detalhes (quando começou,
-              onde dói, febre), melhor a orientação.
-            </p>
-            <label className={estilos.rotulo} htmlFor="sintomas-texto">
-              Sintomas
-            </label>
-            <textarea
-              id="sintomas-texto"
-              className={estilos.textarea}
-              rows={5}
-              placeholder="Ex.: estou com febre há dois dias, dor de cabeça e o corpo dói."
-              value={sintomas}
-              onChange={(e) => setSintomas(e.target.value)}
-            />
-            <div className={estilos.linha}>
-              <button
-                className="botao botao--primario"
-                onClick={() => analisarSintomas("app")}
-                disabled={carregando}
-              >
-                {carregando ? "Analisando…" : "Analisar sintomas"}
-              </button>
+        <div className={estilos.barraOuvir}>
+          <button
+            type="button"
+            className={`${estilos.toggleOuvir} ${ouvir ? estilos.toggleOuvirOn : ""}`}
+            aria-pressed={ouvir}
+            onClick={() => {
+              if (ouvir) pararFala();
+              setOuvir((v) => !v);
+            }}
+          >
+            <span className={estilos.togglePonto} aria-hidden />
+            {ouvir ? "Zela lendo em voz alta" : "Voz da Zela desligada"}
+          </button>
+        </div>
+
+        {/* Conversa */}
+        <div className={estilos.thread} aria-live="polite">
+          {baloes.map((b, i) =>
+            b.autor === "zela" ? (
+              <div key={i} className={`${estilos.balao} ${estilos.balaoZela}`}>
+                {b.texto}
+              </div>
+            ) : (
+              <div key={i} className={`${estilos.balao} ${estilos.balaoUsuario}`}>
+                {b.fotoUrl && (
+                  <Image
+                    src={b.fotoUrl}
+                    alt="Foto que você enviou"
+                    width={220}
+                    height={160}
+                    className={estilos.balaoFoto}
+                    unoptimized
+                  />
+                )}
+                {b.texto}
+              </div>
+            ),
+          )}
+
+          {carregando && (
+            <div className={`${estilos.balao} ${estilos.balaoZela} ${estilos.digitando}`}>
+              <span /><span /><span />
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ---------------------------------------------- Voz */}
-        {canal === "voz" && (
-          <div className={estilos.campo}>
-            <h3 className={estilos.campoTitulo}>Fale os seus sintomas</h3>
-            <p className={estilos.campoAjuda}>
-              Toque em gravar e conte o que sente, como numa conversa. Vamos
-              transcrever para você conferir antes de analisar.
-            </p>
+          {/* Resultado final */}
+          {triagem && <ResultadoTriagem triagem={triagem} />}
 
-            <div className={estilos.vozControles}>
-              {!gravando ? (
-                <button
-                  className="botao botao--primario"
-                  onClick={iniciarGravacao}
-                  disabled={transcrevendo || carregando}
-                >
-                  {transcrevendo ? "Transcrevendo…" : "Gravar fala"}
-                </button>
-              ) : (
-                <button className={`botao ${estilos.botaoParar}`} onClick={pararGravacao}>
-                  <span className={estilos.pulsar} aria-hidden /> Parar e enviar
-                </button>
-              )}
+          <div ref={fimRef} />
+        </div>
 
-              <label className={`botao botao--contorno ${estilos.botaoArquivo}`}>
-                Enviar áudio
-                <input
-                  type="file"
-                  accept="audio/*"
-                  className="escondido-visual"
-                  onChange={aoEscolherAudio}
-                />
-              </label>
-            </div>
-
-            {avisoVoz && <p className={estilos.aviso}>{avisoVoz}</p>}
-
-            <label className={estilos.rotulo} htmlFor="sintomas-voz">
-              Texto reconhecido
-            </label>
-            <textarea
-              id="sintomas-voz"
-              className={estilos.textarea}
-              rows={4}
-              placeholder="O que você falar aparece aqui para revisar."
-              value={sintomas}
-              onChange={(e) => setSintomas(e.target.value)}
-            />
-            <div className={estilos.linha}>
-              <button
-                className="botao botao--primario"
-                onClick={() => analisarSintomas("voz")}
-                disabled={carregando || !sintomas.trim()}
-              >
-                {carregando ? "Analisando…" : "Analisar o que foi dito"}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ---------------------------------------------- Foto */}
-        {canal === "foto" && (
-          <div className={estilos.campo}>
-            <h3 className={estilos.campoTitulo}>Envie uma foto</h3>
-            <p className={estilos.campoAjuda}>
-              Útil para ferida, mancha na pele ou uma receita. A foto é analisada
-              apenas para orientar — não é um diagnóstico.
-            </p>
-
-            <label className={estilos.areaFoto}>
-              {previa ? (
-                <Image
-                  src={previa}
-                  alt="Pré-visualização da foto enviada"
-                  width={360}
-                  height={240}
-                  className={estilos.previa}
-                  unoptimized
-                />
-              ) : (
-                <span className={estilos.areaFotoInterno}>
-                  <IconeFoto className={estilos.areaFotoIcone} aria-hidden />
-                  <span className={estilos.areaFotoTexto}>
-                    Toque para escolher ou tirar uma foto
-                  </span>
-                  <span className={estilos.areaFotoNota}>JPG ou PNG</span>
-                </span>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                className="escondido-visual"
-                onChange={aoEscolherFoto}
-              />
-            </label>
-            {nomeFoto && <p className={estilos.aviso}>Arquivo: {nomeFoto}</p>}
-            {carregando && <p className={estilos.aviso}>Analisando a imagem…</p>}
-          </div>
-        )}
-      </div>
-
-      {/* ---------------------------------------------- Resultado */}
-      <div ref={resultadoRef}>
         {erro && (
           <div className={`${estilos.resultado} ${estilos.resultadoErro}`} role="alert">
             <strong>Não deu certo.</strong>
@@ -397,14 +482,127 @@ export default function TriagemCliente({
           </div>
         )}
 
-        {triagem && !erro && <ResultadoTriagem triagem={triagem} />}
-        {visao && !erro && <ResultadoVisaoView visao={visao} />}
+        {/* Sugestões de resposta rápida */}
+        {!encerrado && sugestoes.length > 0 && (
+          <div className={estilos.sugestoes}>
+            {sugestoes.map((s) => (
+              <button
+                key={s}
+                className={estilos.chip}
+                onClick={() => enviarTexto(s)}
+                disabled={carregando}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {(triagem || visao) && !erro && (
-          <p className={estilos.isencao}>
-            A Zela orienta e prioriza — não substitui a avaliação de um
-            profissional de saúde. Em caso de urgência, ligue 192.
-          </p>
+        {/* Área de entrada */}
+        {triagem ? (
+          <>
+            <p className={estilos.isencao}>
+              A Zela orienta e prioriza, não substitui a avaliação de um
+              profissional de saúde. Em caso de urgência, ligue 192.
+            </p>
+            <div className={estilos.acoesFinais}>
+              <button
+                type="button"
+                className="botao botao--contorno"
+                disabled={falando}
+                aria-disabled={falando}
+                onClick={() => {
+                  // Enquanto a Zela fala, ignora o clique (não sobrepõe nem
+                  // reinicia); ao terminar, um novo clique repete normalmente.
+                  if (falandoRef.current) return;
+                  falar(`${TITULO_NIVEL[triagem.nivel]}. ${triagem.orientacao}`);
+                }}
+              >
+                Ouvir de novo
+              </button>
+              <button className="botao botao--contorno" onClick={recomecar}>
+                Fazer nova triagem
+              </button>
+            </div>
+          </>
+        ) : canal === "foto" ? (
+          <label className={estilos.areaFoto}>
+            <span className={estilos.areaFotoInterno}>
+              <IconeFoto className={estilos.areaFotoIcone} aria-hidden />
+              <span className={estilos.areaFotoTexto}>
+                Toque para escolher ou tirar uma foto
+              </span>
+              <span className={estilos.areaFotoNota}>
+                Útil para ferida, mancha na pele ou uma receita. JPG ou PNG.
+              </span>
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="escondido-visual"
+              onChange={aoEscolherFoto}
+              disabled={carregando}
+            />
+          </label>
+        ) : (
+          <div className={estilos.entradaArea}>
+            {canal === "voz" && (
+              <div className={estilos.vozControles}>
+                {!gravando ? (
+                  <button
+                    className="botao botao--contorno"
+                    onClick={iniciarGravacao}
+                    disabled={transcrevendo || carregando}
+                  >
+                    {transcrevendo ? "Transcrevendo…" : "Gravar fala"}
+                  </button>
+                ) : (
+                  <button className={`botao ${estilos.botaoParar}`} onClick={pararGravacao}>
+                    <span className={estilos.pulsar} aria-hidden /> Parar e transcrever
+                  </button>
+                )}
+                <label className={`botao botao--contorno ${estilos.botaoArquivo}`}>
+                  Enviar áudio
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className="escondido-visual"
+                    onChange={aoEscolherAudio}
+                  />
+                </label>
+              </div>
+            )}
+
+            {avisoVoz && <p className={estilos.aviso}>{avisoVoz}</p>}
+
+            <div className={estilos.compositor}>
+              <textarea
+                className={estilos.textarea}
+                rows={2}
+                placeholder={
+                  canal === "voz"
+                    ? "Toque em Gravar fala e conte o que sente. Se preferir, pode escrever aqui."
+                    : "Escreva o que você está sentindo…"
+                }
+                value={entrada}
+                onChange={(e) => setEntrada(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    enviarTexto(entrada);
+                  }
+                }}
+                disabled={carregando}
+              />
+              <button
+                className="botao botao--primario"
+                onClick={() => enviarTexto(entrada)}
+                disabled={carregando || !entrada.trim()}
+              >
+                {carregando ? "Enviando…" : "Enviar"}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
@@ -439,23 +637,6 @@ function ResultadoTriagem({ triagem }: { triagem: Triagem }) {
             <p className={estilos.encDescricao}>{destino.descricao}</p>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-function ResultadoVisaoView({ visao }: { visao: ResultadoVisao }) {
-  return (
-    <div className={`${estilos.resultado} ${estilos[`borda_${visao.risco}`]}`}>
-      <div className={estilos.resultadoTopo}>
-        <h3 className={estilos.resultadoTitulo}>Análise da foto</h3>
-        <RiskBadge nivel={visao.risco} />
-      </div>
-      <p className={estilos.orientacao}>{visao.descricao}</p>
-      {visao.origem !== "ia" && (
-        <p className={estilos.justificativa}>
-          Observação: a análise de imagem está em modo limitado neste ambiente.
-        </p>
       )}
     </div>
   );

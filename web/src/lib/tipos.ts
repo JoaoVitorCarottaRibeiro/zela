@@ -33,6 +33,19 @@ export interface Triagem {
   encaminhamentos: Encaminhamento[];
 }
 
+// Triagem conversacional (POST /triagem/conversa).
+export interface MensagemConversa {
+  autor: "usuario" | "zela";
+  texto: string;
+}
+
+export interface RespostaConversa {
+  estado: "pergunta" | "concluido";
+  pergunta: string | null;
+  sugestoes: string[];
+  triagem: Triagem | null;
+}
+
 // Retorno de POST /visao/analisar.
 export interface ResultadoVisao {
   descricao: string;
@@ -44,6 +57,33 @@ export interface ResultadoVisao {
 export interface ResultadoTranscricao {
   texto: string;
   origem: string;
+}
+
+// "Entenda seu exame" (POST /exame/analisar).
+export interface ItemExame {
+  nome: string;
+  valor: string | null;
+  referencia: string | null;
+  situacao: "dentro" | "fora" | "atencao";
+  explicacao: string;
+}
+
+export interface ResultadoExame {
+  itens: ItemExame[];
+  resumo: string;
+  precisa_cuidado: boolean;
+  nivel: Nivel | null;
+  origem: string;
+}
+
+// Análise de exame salva no histórico (GET /exame/meus).
+export interface ExameAnaliseOut {
+  id: number;
+  resumo: string;
+  itens: ItemExame[];
+  precisa_cuidado: boolean;
+  nivel: Nivel | null;
+  criado_em: string;
 }
 
 // Usuário autenticado (espelha UsuarioOut).

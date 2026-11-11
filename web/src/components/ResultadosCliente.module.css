@@ -88,3 +88,130 @@
   color: var(--texto-suave);
   margin-bottom: 24px;
 }
+
+/* Seletor: triagens x exames */
+.area {
+  max-width: 760px;
+  margin-inline: auto;
+}
+.abas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--fundo-suave);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 7px;
+  margin-bottom: 22px;
+}
+.aba {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 10px;
+  border: 0;
+  border-radius: var(--raio-sm);
+  background: transparent;
+  color: var(--texto-suave);
+  font-family: var(--fonte);
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.aba:hover {
+  color: var(--azul-profundo);
+}
+.abaAtiva {
+  background: #fff;
+  color: var(--azul-profundo);
+  box-shadow: var(--sombra);
+}
+.contagem {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--fundo-suave);
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.abaAtiva .contagem {
+  background: var(--azul);
+  color: #fff;
+}
+.vazioTipo {
+  text-align: center;
+  color: var(--texto-suave);
+  padding: 36px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.bordaNeutra {
+  border-left-color: var(--azul);
+}
+.exameAcoes {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--linha);
+  display: flex;
+  justify-content: flex-end;
+}
+.remover {
+  background: transparent;
+  border: 0;
+  color: var(--vermelho);
+  font-family: var(--fonte);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.remover:hover {
+  text-decoration: underline;
+}
+
+/* Itens do exame dentro do card */
+.itensExame {
+  list-style: none;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.itemExame {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--linha);
+  flex-wrap: wrap;
+}
+.itemExameNome {
+  color: var(--texto);
+  font-size: 0.98rem;
+}
+.selo {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.selo_dentro {
+  background: var(--verde-suave);
+  color: var(--verde);
+}
+.selo_fora {
+  background: var(--vermelho-suave);
+  color: var(--vermelho);
+}
+.selo_atencao {
+  background: var(--amarelo-suave);
+  color: var(--amarelo);
+}

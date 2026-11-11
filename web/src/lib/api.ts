@@ -2,8 +2,12 @@
 
 import type {
   DadosFicha,
+  ExameAnaliseOut,
   FichaMedica,
+  MensagemConversa,
   RespostaAuth,
+  RespostaConversa,
+  ResultadoExame,
   ResultadoTranscricao,
   ResultadoVisao,
   Triagem,
@@ -307,6 +311,43 @@ export async function enviarTriagem(
   return (await resposta.json()) as Triagem;
 }
 
+export interface OpcoesConversa {
+  idade?: number | null;
+  canal?: Canal;
+  token?: string | null;
+  cpfInformado?: string | null;
+  /** Descrição da análise de imagem, quando a conversa começou por foto. */
+  contextoFoto?: string | null;
+}
+
+/** POST /triagem/conversa — triagem conversacional: a IA pergunta antes de
+ *  concluir (senso crítico). Enquanto precisar de contexto, devolve uma pergunta
+ *  com sugestões de resposta rápida; ao concluir, devolve a triagem registrada. */
+export async function conversarTriagem(
+  historico: MensagemConversa[],
+  opcoes: OpcoesConversa = {},
+): Promise<RespostaConversa> {
+  const { idade, canal, token, cpfInformado, contextoFoto } = opcoes;
+  let resposta: Response;
+  try {
+    resposta = await fetch(`${BASE_URL}/triagem/conversa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...autorizacao(token) },
+      body: JSON.stringify({
+        historico,
+        idade: idade ?? null,
+        canal: canal ?? "app",
+        cpf_informado: cpfInformado ?? null,
+        contexto_foto: contextoFoto ?? null,
+      }),
+    });
+  } catch {
+    throw new ApiError(MSG_OFFLINE);
+  }
+  if (!resposta.ok) throw new ApiError(await lerErro(resposta));
+  return (await resposta.json()) as RespostaConversa;
+}
+
 /** GET /triagens/minhas — histórico do usuário logado (página Resultados). */
 export async function listarMinhasTriagens(token: string): Promise<Triagem[]> {
   let resposta: Response;
@@ -339,6 +380,96 @@ export async function transcreverAudio(
   }
   if (!resposta.ok) throw new ApiError(await lerErro(resposta));
   return (await resposta.json()) as ResultadoTranscricao;
+}
+
+/** POST /voz/falar — gera o áudio (WAV) da fala da Zela com o Piper (offline).
+ *  Retorna o áudio, ou null se o Piper não estiver configurado no servidor
+ *  (nesse caso o cliente usa a voz do próprio navegador como alternativa). */
+export async function falarComPiper(texto: string): Promise<Blob | null> {
+  let resposta: Response;
+  try {
+    resposta = await fetch(`${BASE_URL}/voz/falar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texto }),
+    });
+  } catch {
+    return null;
+  }
+  if (!resposta.ok) return null;
+  const tipo = resposta.headers.get("content-type") ?? "";
+  if (tipo.includes("audio")) return await resposta.blob();
+  return null; // resposta JSON = Piper não configurado
+}
+
+/** POST /exame/analisar — lê um exame (foto ou PDF) e explica. Exige login. */
+export async function analisarExame(
+  arquivo: File,
+  token: string,
+): Promise<ResultadoExame> {
+  const form = new FormData();
+  form.append("arquivo", arquivo, arquivo.name);
+  let resposta: Response;
+  try {
+    resposta = await fetch(`${BASE_URL}/exame/analisar`, {
+      method: "POST",
+      headers: { ...autorizacao(token) },
+      body: form,
+    });
+  } catch {
+    throw new ApiError(MSG_OFFLINE);
+  }
+  if (!resposta.ok) throw new ApiError(await lerErro(resposta));
+  return (await resposta.json()) as ResultadoExame;
+}
+
+/** POST /exame/salvar — guarda no histórico uma análise que a pessoa autorizou. */
+export async function salvarExame(
+  resultado: ResultadoExame,
+  token: string,
+): Promise<ExameAnaliseOut> {
+  let resposta: Response;
+  try {
+    resposta = await fetch(`${BASE_URL}/exame/salvar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...autorizacao(token) },
+      body: JSON.stringify(resultado),
+    });
+  } catch {
+    throw new ApiError(MSG_OFFLINE);
+  }
+  if (!resposta.ok) throw new ApiError(await lerErro(resposta));
+  return (await resposta.json()) as ExameAnaliseOut;
+}
+
+/** DELETE /exame/{id} — apaga um exame do histórico (revogação, LGPD). */
+export async function removerExame(id: number, token: string): Promise<void> {
+  let resposta: Response;
+  try {
+    resposta = await fetch(`${BASE_URL}/exame/${id}`, {
+      method: "DELETE",
+      headers: { ...autorizacao(token) },
+    });
+  } catch {
+    throw new ApiError(MSG_OFFLINE);
+  }
+  if (!resposta.ok && resposta.status !== 204) {
+    throw new ApiError(await lerErro(resposta));
+  }
+}
+
+/** GET /exame/meus — histórico de análises de exame do usuário logado. */
+export async function listarMeusExames(token: string): Promise<ExameAnaliseOut[]> {
+  let resposta: Response;
+  try {
+    resposta = await fetch(`${BASE_URL}/exame/meus`, {
+      headers: { ...autorizacao(token) },
+    });
+  } catch {
+    throw new ApiError(MSG_OFFLINE);
+  }
+  if (!resposta.ok) throw new ApiError(await lerErro(resposta));
+  return (await resposta.json()) as ExameAnaliseOut[];
 }
 
 /** POST /visao/analisar — descreve a foto e estima o risco. */

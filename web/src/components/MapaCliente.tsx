@@ -88,13 +88,43 @@ function formatarDuracao(seg: number | null): string {
   return r ? `${h} h ${r} min` : `${h} h`;
 }
 
-function rotuloTipo(tags: Record<string, string>): string {
-  const nome = (tags.name || "").toLowerCase();
-  if (nome.includes("upa") || nome.includes("pronto")) return "UPA / Pronto-atendimento";
-  if (tags.amenity === "hospital" || tags.healthcare === "hospital") return "Hospital";
-  if (nome.includes("ubs") || nome.includes("básica") || nome.includes("saúde da família"))
-    return "UBS";
-  return "Clínica / Posto de saúde";
+/** Diz se a unidade é PÚBLICA (SUS) e com que rótulo. Devolve null para o que
+ *  não tem sinal público (ex.: hospitais particulares), para não entrar na
+ *  lista — a Zela é para quem depende do SUS. Conservador de propósito: prefere
+ *  deixar de fora um público mal cadastrado a mostrar um particular. */
+function sinalPublico(tags: Record<string, string>): string | null {
+  const nome = (tags.name || tags["name:pt"] || "").toLowerCase();
+  const operador = (tags.operator || "").toLowerCase();
+  const tipoOperador = (tags["operator:type"] || "").toLowerCase();
+  const texto = `${nome} ${operador}`;
+
+  // UPA / Pronto-socorro (público)
+  if (/\bupa\b|pronto[ -]?socorro|pronto[ -]?atendimento/.test(nome))
+    return "UPA / Pronto-atendimento";
+  // UBS / posto / centro de saúde / ESF / AMA / CAPS (público)
+  if (
+    /\bubs\b|unidade b[áa]sica|posto de sa[úu]de|centro de sa[úu]de|centro de refer[êe]ncia|sa[úu]de da fam[íi]lia|\besf\b|\bama\b|assist[êe]ncia m[ée]dica ambulatorial|\bcaps\b/.test(
+      nome,
+    )
+  )
+    return "UBS / Posto de saúde";
+
+  // Centro de saúde (healthcare=centre) é, no Brasil, quase sempre UBS pública —
+  // inclusive quando o nome é de um médico (ex.: "Dra. Fulana"). Só fica de fora
+  // se estiver explicitamente marcado como privado.
+  if (tags.healthcare === "centre" && tipoOperador !== "private")
+    return "UBS / Posto de saúde";
+
+  // Marcadores de gestão pública (operador ou nome)
+  const publicoKw =
+    /prefeitura|munic[íi]p|estadual|estado de|governo|secretaria[^.]*sa[úu]de|\bsus\b|\bsms\b|universit[áa]ri|hospital das cl[íi]nicas|hospital regional|santa casa|\bp[úu]blic/;
+  if (tipoOperador === "public" || tipoOperador === "government" || publicoKw.test(texto)) {
+    if (tags.amenity === "hospital" || tags.healthcare === "hospital")
+      return "Hospital público";
+    return "Unidade de saúde pública";
+  }
+
+  return null;
 }
 
 function montarEndereco(end: Record<string, string>): string | null {
@@ -143,6 +173,93 @@ function linkGoogle(o: Coord, d: Coord, modo: "walking" | "driving" | "transit")
 
 // ------------------------- chamadas externas ----------------------- //
 
+interface OverpassEl {
+  type: string;
+  id: number;
+  lat?: number;
+  lon?: number;
+  center?: { lat: number; lon: number };
+  tags?: Record<string, string>;
+}
+
+// Vários espelhos públicos do Overpass: se um estiver ocupado (502/429), tenta o
+// próximo, antes de cair no Nominatim. Melhora muito a confiabilidade.
+const OVERPASS_MIRRORS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+];
+
+async function overpassFetch(query: string): Promise<OverpassEl[]> {
+  for (const url of OVERPASS_MIRRORS) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "data=" + encodeURIComponent(query),
+      });
+      if (!res.ok) continue;
+      const j = await res.json();
+      if (Array.isArray(j?.elements)) return j.elements as OverpassEl[];
+    } catch {
+      /* tenta o próximo espelho */
+    }
+  }
+  throw new Error("overpass-indisponivel");
+}
+
+function coordDe(el: OverpassEl): Coord | null {
+  const lat = el.lat ?? el.center?.lat;
+  const lon = el.lon ?? el.center?.lon;
+  if (typeof lat !== "number" || typeof lon !== "number") return null;
+  return { lat, lon };
+}
+
+/** Busca unidades de saúde pelo OpenStreetMap (Overpass) e mantém só as
+ *  PÚBLICAS (ver sinalPublico). É a fonte principal. */
+async function buscarViaOverpass(centro: Coord): Promise<Local[]> {
+  const { lat, lon } = centro;
+  const raio = 8000;
+  const query =
+    `[out:json][timeout:25];(` +
+    `nwr["amenity"="hospital"](around:${raio},${lat},${lon});` +
+    `nwr["amenity"="clinic"](around:${raio},${lat},${lon});` +
+    `nwr["amenity"="doctors"](around:${raio},${lat},${lon});` +
+    `nwr["healthcare"="centre"](around:${raio},${lat},${lon});` +
+    `);out center 150 tags;`;
+
+  const elementos = await overpassFetch(query);
+
+  const vistos = new Set<string>();
+  const locais: Local[] = [];
+  for (const el of elementos) {
+    const tags = el.tags || {};
+    const nome = tags.name || tags["name:pt"] || tags.official_name;
+    if (!nome) continue;
+    const rotulo = sinalPublico(tags);
+    if (!rotulo) continue; // descarta particulares
+    const c = coordDe(el);
+    if (!c) continue;
+    const distancia = haversine(centro, c);
+    if (distancia > 7000) continue;
+    const chave = `${nome}@${c.lat.toFixed(4)},${c.lon.toFixed(4)}`;
+    if (vistos.has(chave)) continue;
+    vistos.add(chave);
+    locais.push({
+      id: `${el.type}${el.id}`,
+      nome,
+      tipo: rotulo,
+      lat: c.lat,
+      lon: c.lon,
+      endereco: montarEndereco(tags),
+      distancia,
+    });
+  }
+  locais.sort((a, b) => a.distancia - b.distancia);
+  return locais.slice(0, 15);
+}
+
+// Fallback: Nominatim com termos públicos, também filtrado por sinalPublico.
 interface ItemNominatim {
   osm_type?: string;
   osm_id?: number;
@@ -150,8 +267,6 @@ interface ItemNominatim {
   lon: string;
   name?: string;
   display_name?: string;
-  type?: string;
-  category?: string;
   address?: Record<string, string>;
 }
 
@@ -164,16 +279,20 @@ async function consultarNominatim(termo: string, viewbox: string): Promise<ItemN
   return (await res.json()) as ItemNominatim[];
 }
 
-async function buscarLocais(centro: Coord): Promise<Local[]> {
+async function buscarViaNominatim(centro: Coord): Promise<Local[]> {
   const { lat, lon } = centro;
-  const d = 0.05; // ~5,5 km
-  const viewbox = `${lon - d},${lat - d},${lon + d},${lat + d}`;
-  // Termos cobrindo as opções públicas: hospital, UPA e UBS.
-  const termos = ["hospital", "UPA", "UBS"];
+  const dd = 0.05; // ~5,5 km
+  const viewbox = `${lon - dd},${lat - dd},${lon + dd},${lat + dd}`;
+  const termos = [
+    "UBS",
+    "UPA",
+    "posto de saúde",
+    "hospital municipal",
+    "hospital estadual",
+  ];
 
   const vistos = new Set<string>();
   const locais: Local[] = [];
-  // Sequencial (gentil com o Nominatim) — cada chamada responde em ~0,4 s.
   for (const termo of termos) {
     let itens: ItemNominatim[] = [];
     try {
@@ -184,19 +303,21 @@ async function buscarLocais(centro: Coord): Promise<Local[]> {
     for (const it of itens) {
       const nome = it.name || it.display_name?.split(",")[0];
       if (!nome) continue;
-      const coord = { lat: parseFloat(it.lat), lon: parseFloat(it.lon) };
-      if (Number.isNaN(coord.lat) || Number.isNaN(coord.lon)) continue;
-      const chave = `${nome}@${coord.lat.toFixed(4)},${coord.lon.toFixed(4)}`;
-      if (vistos.has(chave)) continue;
-      const distancia = haversine(centro, coord);
+      const rotulo = sinalPublico({ name: nome });
+      if (!rotulo) continue;
+      const c = { lat: parseFloat(it.lat), lon: parseFloat(it.lon) };
+      if (Number.isNaN(c.lat) || Number.isNaN(c.lon)) continue;
+      const distancia = haversine(centro, c);
       if (distancia > 7000) continue;
+      const chave = `${nome}@${c.lat.toFixed(4)},${c.lon.toFixed(4)}`;
+      if (vistos.has(chave)) continue;
       vistos.add(chave);
       locais.push({
         id: `${it.osm_type || "n"}${it.osm_id ?? chave}`,
         nome,
-        tipo: rotuloTipo({ name: nome, amenity: it.type || "", healthcare: it.type || "" }),
-        lat: coord.lat,
-        lon: coord.lon,
+        tipo: rotulo,
+        lat: c.lat,
+        lon: c.lon,
         endereco: montarEndereco(it.address || {}),
         distancia,
       });
@@ -204,6 +325,16 @@ async function buscarLocais(centro: Coord): Promise<Local[]> {
   }
   locais.sort((a, b) => a.distancia - b.distancia);
   return locais.slice(0, 15);
+}
+
+async function buscarLocais(centro: Coord): Promise<Local[]> {
+  try {
+    const viaOverpass = await buscarViaOverpass(centro);
+    if (viaOverpass.length > 0) return viaOverpass;
+  } catch {
+    /* Overpass indisponível — cai para o Nominatim */
+  }
+  return buscarViaNominatim(centro);
 }
 
 interface Trajeto {
@@ -435,6 +566,14 @@ export default function MapaCliente() {
 
   const selecionar = useCallback(
     async (id: string) => {
+      // Clicar de novo na mesma unidade fecha (toggle).
+      if (id === selId) {
+        setSelId(null);
+        setTempos(null);
+        setShapes({ pe: [], carro: [] });
+        setCarregandoTempos(false);
+        return;
+      }
       setSelId(id);
       setTempos(null);
       setShapes({ pe: [], carro: [] });
@@ -451,7 +590,7 @@ export default function MapaCliente() {
       setShapes({ pe: pe.shape, carro: carro.shape });
       setCarregandoTempos(false);
     },
-    [locais, posicao],
+    [locais, posicao, selId],
   );
 
   // 4) Marcadores das unidades
@@ -560,7 +699,7 @@ export default function MapaCliente() {
 
             {carregandoGeo && <p className={estilos.estado}>Localizando você…</p>}
             {!carregandoGeo && locais === null && !erroLocais && (
-              <p className={estilos.estado}>Buscando unidades de saúde…</p>
+              <p className={estilos.estado}>Buscando unidades públicas (SUS)…</p>
             )}
             {erroLocais && <p className={estilos.estado}>{erroLocais}</p>}
             {locais !== null && locais.length === 0 && !erroLocais && (

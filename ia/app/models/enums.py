@@ -1,33 +1,8 @@
-"""Enums do domínio da Zela — fonte única de verdade (usados nos modelos e na API)."""
-from enum import Enum
+"""Enums do domínio — a fonte de verdade agora vive em app/dominio/enums.py.
 
+Mantido aqui como reexport para a infraestrutura (modelos ORM) e para os schemas
+continuarem importando de `app.models.enums` sem quebrar.
+"""
+from app.dominio.enums import Canal, Destino, Nivel, StatusEncaminhamento
 
-class Nivel(str, Enum):
-    """Semáforo da triagem."""
-    verde = "verde"        # resolver em casa com orientação
-    amarelo = "amarelo"    # ir à UBS, com prioridade
-    vermelho = "vermelho"  # emergência: telessaúde ou SAMU 192
-
-
-class Canal(str, Enum):
-    """Por onde a pessoa chegou até a Zela (acesso multi-porta)."""
-    app = "app"
-    voz = "voz"       # ligação / URA 0800
-    foto = "foto"
-    totem = "totem"   # totem comunitário
-    acs = "acs"       # visita do agente comunitário de saúde
-
-
-class Destino(str, Enum):
-    """Para onde a triagem encaminha."""
-    casa = "casa"
-    ubs = "ubs"
-    telessaude = "telessaude"
-    samu = "samu"
-
-
-class StatusEncaminhamento(str, Enum):
-    aberto = "aberto"
-    em_andamento = "em_andamento"
-    concluido = "concluido"
-    cancelado = "cancelado"
+__all__ = ["Nivel", "Canal", "Destino", "StatusEncaminhamento"]

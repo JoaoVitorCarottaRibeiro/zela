@@ -20,7 +20,11 @@ Esta pasta (`ia/`) é o **backend da CitizenTech Zela** e atende à disciplina d
 | **Indicador de impacto** | nº de triagens, % resolvidas sem deslocamento, tempo até orientação, encaminhamentos por nível. |
 | **ODS conectados** | 3 (Saúde), 10 (Desigualdades), 9 (Inovação/Infraestrutura), 11 (Cidades e comunidades). |
 
-**Integrantes:** _(preencher os nomes antes da entrega)_
+**Integrantes:**
+
+- João Vitor Carotta Ribeiro (RM 555187)
+- Arthur Bueno de Oliveira (RM 558396)
+- Victor Magdaleno Marcos (RM 556729)
 
 ---
 
@@ -39,6 +43,44 @@ uvicorn app.main:app --reload
 Abra **http://localhost:8000/docs** para a documentação automática (Swagger) e testar os endpoints.
 
 > Sem `DATABASE_URL` no `.env`, o backend cai num **SQLite local** (`zela.db`) — útil para rodar sem internet.
+
+---
+
+## Arquitetura em camadas
+
+A API segue uma separação em camadas inspirada em DDD: cada camada só conhece a de baixo, e o **domínio** (as regras de negócio) não depende de framework, banco nem HTTP. Isso deixa as regras testáveis isoladamente e o código fácil de evoluir.
+
+```
+HTTP  (clientes: app mobile, site web)
+  │
+  ▼
+Interface / API        app/routers/ , app/main.py , app/schemas.py , app/deps.py
+  │   rotas REST, contratos (Pydantic), autenticação, middlewares
+  ▼
+Aplicação / Serviços   app/services/ , app/crud.py
+  │   orquestra os casos de uso (triagem, voz, visão, exame) e a persistência
+  ▼
+Domínio (regras puras) app/dominio/
+  │   classificação por sinais, destino por nível, validações, erros
+  ▼
+Infraestrutura         app/models/ , app/db/ , app/core/
+      ORM (SQLAlchemy), sessão/engine, config, segurança, e-mail
+  │
+  ▼
+Banco de dados  (Supabase / PostgreSQL  ·  SQLite no modo offline)
+```
+
+| Camada | Pasta(s) | Responsabilidade |
+| --- | --- | --- |
+| **Domínio** | `app/dominio/` | Regras de negócio **puras** (sem framework): `triagem.py` (sinais vermelhos/amarelos e classificação), `encaminhamento.py` (destino por nível), `enums.py`, `erros.py` (`RegraViolada`). |
+| **Aplicação** | `app/services/`, `app/crud.py` | Casos de uso: triagem (regras + IA + conversa), voz, visão, exame; e as operações de persistência das entidades. |
+| **Infraestrutura** | `app/models/`, `app/db/`, `app/core/` | Mapeamento ORM das entidades; conexão e sessão do banco; config, segurança (hash PBKDF2 + token HMAC), e-mail. |
+| **Interface / API** | `app/routers/`, `app/main.py`, `app/schemas.py`, `app/deps.py` | HTTP: endpoints REST, contratos de entrada/saída (Pydantic), dependências (usuário atual), montagem do app. |
+| **Segurança (transversal)** | `app/seguranca/` | Módulo da disciplina de Cybersecurity (PII, taint, Risco Cidadão); protege os dados que atravessam as camadas. |
+
+**Regra de dependência:** as setas apontam sempre para dentro. Um `router` chama um `service`; o `service` aplica as regras do `dominio` e persiste via `crud` + `models`; o `dominio` **não importa** nada de FastAPI nem de SQLAlchemy. Por isso os testes do domínio (`tests/test_dominio.py`) rodam sem subir a API nem o banco.
+
+**Exemplo de fluxo (registrar uma triagem):** `POST /triagens` (interface) chama `triagem_service.triar()` (aplicação), que usa `dominio/triagem.classificar_por_sinais()` (regra de ouro: um sinal vermelho nunca é rebaixado pela IA); em seguida `crud.criar_triagem()` grava a triagem e já abre o `Encaminhamento` conforme `dominio/encaminhamento.destino_para()`.
 
 ---
 

@@ -46,5 +46,15 @@ def client(db_session):
 
 @pytest.fixture(autouse=True)
 def _sem_rede(monkeypatch):
-    """Garante que a triagem não chame a IA (Gemini) durante os testes."""
+    """Garante que a triagem não chame a IA (Gemini) durante os testes.
+
+    Por padrão a IA fica indisponível: a triagem cai nas regras (offline) e a
+    conversa conclui pelas regras. Testes que querem simular a IA sobrescrevem
+    `conversar_com_ia` com o seu próprio retorno.
+    """
     monkeypatch.setattr(triagem_service, "triar_com_ia", lambda entrada, tentativas=3: None)
+    monkeypatch.setattr(
+        triagem_service,
+        "conversar_com_ia",
+        lambda *a, **k: None,
+    )

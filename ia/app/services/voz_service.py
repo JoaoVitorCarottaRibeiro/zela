@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import logging
+import os
 import subprocess
+import tempfile
 from pathlib import Path
 
 from app.core.config import settings
@@ -46,14 +48,27 @@ def falar(texto: str) -> bytes | None:
     binario, voz = settings.piper_bin, settings.piper_voice
     if not binario or not voz or not Path(binario).exists() or not Path(voz).exists():
         return None
+
+    # Grava num arquivo temporário e lê de volta. No Windows, pedir o WAV pela
+    # saída padrão (--output_file -) corrompe o áudio (conversão de \n -> \r\n),
+    # o que vira chiado. Via arquivo o WAV sai íntegro.
+    saida = None
     try:
-        proc = subprocess.run(
-            [binario, "--model", voz, "--output_file", "-"],
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            saida = tmp.name
+        subprocess.run(
+            [binario, "--model", voz, "--output_file", saida],
             input=texto.encode("utf-8"),
             capture_output=True,
             check=True,
         )
-        return proc.stdout
+        return Path(saida).read_bytes()
     except Exception as e:
         logger.warning("Falha ao gerar voz com o Piper: %s", e)
         return None
+    finally:
+        if saida:
+            try:
+                os.unlink(saida)
+            except OSError:
+                pass

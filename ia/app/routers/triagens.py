@@ -18,7 +18,15 @@ from app.schemas import TriagemCreate, TriagemOut
 router = APIRouter(prefix="/triagens", tags=["triagens"])
 
 
-@router.post("", response_model=TriagemOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=TriagemOut,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        404: {"description": "Cidadão informado não existe."},
+        422: {"description": "Sintomas insuficientes (regra do domínio)."},
+    },
+)
 def criar(
     dados: TriagemCreate,
     db: Session = Depends(get_db),
@@ -49,7 +57,11 @@ def listar(limite: int = 100, offset: int = 0, db: Session = Depends(get_db)) ->
     return crud.listar_triagens(db, limite=limite, offset=offset)
 
 
-@router.get("/{triagem_id}", response_model=TriagemOut)
+@router.get(
+    "/{triagem_id}",
+    response_model=TriagemOut,
+    responses={404: {"description": "Triagem não encontrada."}},
+)
 def obter(triagem_id: int, db: Session = Depends(get_db)) -> TriagemOut:
     triagem = crud.obter_triagem(db, triagem_id)
     if triagem is None:

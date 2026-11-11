@@ -14,10 +14,10 @@ export default function PaginaResultados() {
       <section className={estilos.topo}>
         <div className={`container ${estilos.topoInterno}`}>
           <span className="sobrelinha">Seus resultados</span>
-          <h1>Histórico das suas triagens</h1>
+          <h1>Histórico de triagens e exames</h1>
           <p className={estilos.subtitulo}>
-            Veja o que você relatou, o nível de risco e a orientação de cada
-            atendimento.
+            Veja suas triagens e as explicações dos seus exames, com o nível e o
+            próximo passo de cada um.
           </p>
         </div>
       </section>

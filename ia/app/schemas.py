@@ -5,7 +5,7 @@ contratos de entrada/saída da API (Pydantic).
 """
 import re
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -14,6 +14,8 @@ from app.models.enums import Canal, Destino, Nivel, StatusEncaminhamento
 __all__ = [
     "Nivel", "Canal", "Destino", "StatusEncaminhamento",
     "EntradaTriagem", "ResultadoTriagem", "ResultadoVisao", "ResultadoTranscricao",
+    "MensagemConversa", "EntradaConversa", "RespostaConversa",
+    "ItemExame", "ResultadoExame", "ExameAnaliseOut",
     "CidadaoCreate", "CidadaoUpdate", "CidadaoOut",
     "TriagemCreate", "TriagemOut",
     "EncaminhamentoCreate", "EncaminhamentoUpdate", "EncaminhamentoOut",
@@ -86,6 +88,11 @@ def validar_forca_senha(valor: str) -> str:
 class EntradaTriagem(BaseModel):
     sintomas: str = Field(..., description="O que a pessoa está sentindo, em texto.")
     idade: int | None = Field(None, description="Idade, se informada.")
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"sintomas": "estou com febre há dois dias e o corpo dói", "idade": 30}
+        }
+    )
 
 
 class ResultadoTriagem(BaseModel):
@@ -107,6 +114,42 @@ class ResultadoTranscricao(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Entenda seu exame: a IA lê um resultado de exame e EXPLICA (não diagnostica)
+# ---------------------------------------------------------------------------
+
+class ItemExame(BaseModel):
+    """Um item lido do exame (ex.: Hemoglobina), com a faixa impressa no laudo."""
+    nome: str
+    valor: str | None = None
+    referencia: str | None = Field(None, description="Faixa de referência impressa no exame.")
+    situacao: Literal["dentro", "fora", "atencao"] = Field(
+        "atencao", description="dentro da faixa | fora da faixa | atenção/dúvida"
+    )
+    explicacao: str = ""
+
+
+class ResultadoExame(BaseModel):
+    itens: list[ItemExame] = Field(default_factory=list)
+    resumo: str = Field(..., description="Visão geral em linguagem simples (não é diagnóstico).")
+    precisa_cuidado: bool = Field(
+        False, description="True se algo está fora da faixa ou em dúvida — orienta procurar profissional."
+    )
+    nivel: Nivel | None = Field(None, description="Nível sugerido para o encaminhamento, se houver.")
+    origem: str = Field("ia", description="ia | indisponivel | erro")
+
+
+class ExameAnaliseOut(BaseModel):
+    """Análise de exame salva no histórico (aparece em Resultados)."""
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    resumo: str
+    itens: list[ItemExame] = []
+    precisa_cuidado: bool
+    nivel: Nivel | None = None
+    criado_em: datetime
+
+
+# ---------------------------------------------------------------------------
 # Recursos persistidos (SOA) — Cidadão, Triagem e Encaminhamento
 # ---------------------------------------------------------------------------
 
@@ -116,6 +159,14 @@ class CidadaoCreate(BaseModel):
     bairro: str | None = Field(None, max_length=120)
     cidade: str = Field("São Paulo", max_length=120)
     telefone: str | None = Field(None, max_length=20, description="Fictício.")
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "nome": "Regina (fictícia)", "idade": 53,
+                "bairro": "Vila Andrade", "cidade": "São Paulo", "telefone": None,
+            }
+        }
+    )
 
 
 class CidadaoUpdate(BaseModel):
@@ -127,7 +178,16 @@ class CidadaoUpdate(BaseModel):
 
 
 class CidadaoOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": 1, "nome": "Regina (fictícia)", "idade": 53,
+                "bairro": "Vila Andrade", "cidade": "São Paulo", "telefone": None,
+                "criado_em": "2026-11-10T16:00:00Z",
+            }
+        },
+    )
     id: int
     nome: str
     idade: int | None
@@ -190,6 +250,47 @@ class TriagemOut(BaseModel):
     origem: str
     criado_em: datetime
     encaminhamentos: list[EncaminhamentoOut] = []
+
+
+# ---------------------------------------------------------------------------
+# Triagem conversacional (a IA pergunta antes de concluir)
+# ---------------------------------------------------------------------------
+
+class MensagemConversa(BaseModel):
+    """Uma fala da conversa. `autor` é quem falou: a pessoa ou o Zela."""
+    autor: Literal["usuario", "zela"]
+    texto: str
+
+
+class EntradaConversa(BaseModel):
+    """Estado da conversa enviado a cada rodada. O histórico fica no cliente
+    (sem estado no servidor), então funciona também para convidado (urgência)."""
+    historico: list[MensagemConversa] = Field(default_factory=list)
+    idade: int | None = Field(None, ge=0, le=130)
+    canal: Canal = Field(Canal.app, description="Por onde a pessoa chegou.")
+    cidadao_id: int | None = None
+    cpf_informado: str | None = Field(
+        None, description="Urgência (convidado): CPF informado sem login. Não autentica."
+    )
+    contexto_foto: str | None = Field(
+        None, description="Descrição da análise de imagem, quando a conversa começou por foto."
+    )
+
+    @field_validator("cpf_informado")
+    @classmethod
+    def _valida_cpf_informado(cls, v: str | None) -> str | None:
+        if v is None or not str(v).strip():
+            return None
+        return validar_cpf(v)
+
+
+class RespostaConversa(BaseModel):
+    """Resposta de cada rodada: ou a IA faz uma pergunta, ou conclui e devolve
+    a triagem já registrada (com o encaminhamento)."""
+    estado: Literal["pergunta", "concluido"]
+    pergunta: str | None = None
+    sugestoes: list[str] = Field(default_factory=list)
+    triagem: "TriagemOut | None" = None
 
 
 # ---------------------------------------------------------------------------

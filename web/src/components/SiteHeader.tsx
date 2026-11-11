@@ -16,6 +16,7 @@ const LINKS_DESLOGADO = [
 const LINKS_LOGADO = [
   { href: "/ficha-medica", rotulo: "Ficha médica" },
   { href: "/triagem", rotulo: "Minha triagem" },
+  { href: "/exame", rotulo: "Entenda seu exame" },
   { href: "/resultados", rotulo: "Resultados" },
   { href: "/mapa", rotulo: "Mapa" },
 ];

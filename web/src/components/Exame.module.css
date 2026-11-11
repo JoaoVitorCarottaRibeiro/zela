@@ -1,0 +1,199 @@
+.area {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+/* Enquadramento (não é diagnóstico) */
+.aviso {
+  background: var(--fundo-suave);
+  border: 1px solid var(--linha);
+  border-left: 4px solid var(--azul);
+  border-radius: var(--raio);
+  padding: 16px 18px;
+  color: var(--texto);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  margin-bottom: 22px;
+}
+
+/* Upload */
+.painel {
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra);
+  padding: clamp(22px, 4vw, 34px);
+}
+.areaUpload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  border: 1.5px dashed var(--azul);
+  border-radius: var(--raio);
+  background: var(--fundo-suave);
+  padding: 40px 20px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.areaUpload:hover {
+  background: #e9f5ff;
+}
+.uploadIcone {
+  width: 42px;
+  height: 42px;
+  color: var(--azul-escuro);
+}
+.uploadTexto {
+  font-weight: 600;
+  color: var(--tinta);
+  font-size: 1.05rem;
+}
+.uploadNota {
+  font-size: 0.86rem;
+  color: var(--texto-suave);
+}
+.arquivo {
+  margin-top: 14px;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+.erro {
+  margin-top: 14px;
+  color: var(--vermelho);
+  font-size: 0.95rem;
+}
+.transparencia {
+  margin-top: 14px;
+  font-size: 0.86rem;
+  color: var(--texto-suave);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Consentimento para guardar (LGPD) */
+.consentimento {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--linha);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.consentimentoTexto {
+  color: var(--texto);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+.guardado {
+  color: var(--verde);
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+/* Resultado */
+.resultado {
+  background: #fff;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra);
+  padding: clamp(22px, 4vw, 34px);
+}
+.resumo {
+  color: var(--texto);
+  font-size: 1.08rem;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.itens {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.item {
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  padding: 16px 18px;
+}
+.itemTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.itemNome {
+  font-weight: 700;
+  color: var(--tinta);
+  font-size: 1.05rem;
+}
+.badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.b_dentro {
+  background: var(--verde-suave);
+  color: var(--verde);
+}
+.b_fora {
+  background: var(--vermelho-suave);
+  color: var(--vermelho);
+}
+.b_atencao {
+  background: var(--amarelo-suave);
+  color: var(--amarelo);
+}
+.itemValores {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.valor {
+  font-weight: 700;
+  color: var(--azul-profundo);
+}
+.ref {
+  color: var(--texto-suave);
+  font-size: 0.92rem;
+}
+.itemExpl {
+  margin-top: 8px;
+  color: var(--texto-suave);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.cuidado {
+  margin-top: 20px;
+  background: var(--amarelo-suave);
+  border-radius: var(--raio);
+  padding: 16px 18px;
+  color: var(--texto);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+.rodapeAviso {
+  margin-top: 18px;
+  font-size: 0.86rem;
+  color: var(--texto-suave);
+  text-align: center;
+}
+.acoes {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 560px) {
+  .acoes :global(.botao) {
+    width: 100%;
+  }
+}

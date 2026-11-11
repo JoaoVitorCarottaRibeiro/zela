@@ -3,8 +3,12 @@
 from app.db.base import Base
 from app.models.cidadao import Cidadao
 from app.models.encaminhamento import Encaminhamento
+from app.models.exame_analise import ExameAnalise
 from app.models.ficha_medica import FichaMedica
 from app.models.triagem import Triagem
 from app.models.usuario import Usuario
 
-__all__ = ["Base", "Cidadao", "Triagem", "Encaminhamento", "Usuario", "FichaMedica"]
+__all__ = [
+    "Base", "Cidadao", "Triagem", "Encaminhamento", "Usuario", "FichaMedica",
+    "ExameAnalise",
+]
