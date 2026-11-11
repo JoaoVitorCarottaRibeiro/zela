@@ -193,7 +193,11 @@ cd ia && pytest
 
 - `swagger-docs-1.jpg` e `swagger-docs-2.jpg`: Swagger com todos os endpoints. ✅
 - `migracoes-alembic.jpg` (+ `.txt`): Supabase na revisão head, 7/7 migrações aplicadas. ✅
-- _(opcional)_ print do `pytest` passando: **(adicionar aqui)**
+
+<img width="800" height="1555" alt="swagger-docs-1" src="https://github.com/user-attachments/assets/56f50f51-3a2c-4fd5-bbb7-8c809663099a" />
+
+<img width="800" height="1555" alt="swagger-docs-2" src="https://github.com/user-attachments/assets/eefa60f9-10b0-42c5-96f8-a1f807dc86a4" />
+
 
 ### Vídeo pitch (até 3 min): **(adicionar o link aqui)**
 
@@ -281,10 +285,15 @@ Apoio: painel de Risco Cidadão (`/seguranca/painel`), filtro que redige PII nos
 
 O módulo `ia/app/seguranca/` + `ia/tests/test_seguranca.py` + `ia/seguranca_scan.py`.
 
-### Evidências (prints) — adicionar em `docs/evidencias/`
+### Evidências (prints) — em `docs/evidencias/`
 
-- `cyber-painel.jpg`: painel de Risco Cidadão com a demonstração. **(adicionar aqui)**
-- `cyber-auditoria.jpg`: saída do `seguranca_scan.py`. **(adicionar aqui)**
+- `cyber-painel.png`: painel de Risco Cidadão com a demonstração.
+- `cyber-auditoria.png`: saída do `seguranca_scan.py`.
+
+<img width="366" height="467" alt="cyber-painel" src="https://github.com/user-attachments/assets/0f4a993d-c3c8-43dc-af55-24878f7b636a" />
+
+<img width="606" height="590" alt="cyber-auditoria" src="https://github.com/user-attachments/assets/1a3e4806-0900-4ff0-b7bd-f56ab0ca92cf" />
+
 
 ### Vídeo pitch (até 3 min): **(adicionar o link aqui)**
 
