@@ -45,11 +45,20 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="ajuda"
+        name="mapa"
         options={{
-          title: "Ajuda",
+          title: "Mapa",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="medkit-outline" color={color} size={size} />
+            <Ionicons name="location-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="mais"
+        options={{
+          title: "Mais",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="grid-outline" color={color} size={size} />
           ),
         }}
       />

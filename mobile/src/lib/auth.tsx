@@ -22,6 +22,7 @@ interface ContextoAuth {
   carregando: boolean;
   entrar: (login: string, senha: string) => Promise<void>;
   cadastrar: (dados: DadosCadastro) => Promise<void>;
+  atualizarUsuario: (u: Usuario) => void;
   sair: () => Promise<void>;
 }
 
@@ -93,6 +94,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [aplicar],
   );
 
+  const atualizarUsuario = useCallback((u: Usuario) => {
+    setUsuario(u);
+  }, []);
+
   const sair = useCallback(async () => {
     try {
       await SecureStore.deleteItemAsync(CHAVE);
@@ -105,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ usuario, token, carregando, entrar, cadastrar, sair }}
+      value={{ usuario, token, carregando, entrar, cadastrar, atualizarUsuario, sair }}
     >
       {children}
     </AuthContext.Provider>

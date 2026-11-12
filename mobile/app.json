@@ -22,14 +22,16 @@
       }
     },
     "android": {
+      "package": "com.zela.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#4BB9FA"
       },
       "permissions": [
-        "RECORD_AUDIO",
-        "CAMERA",
-        "READ_MEDIA_IMAGES"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "plugins": [
@@ -46,7 +48,23 @@
           "microphonePermission": "A Zela usa o microfone para você falar os seus sintomas."
         }
       ],
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "cd189a76-137f-4f01-ae64-d72bcaa50793"
+      }
+    }
   }
 }
