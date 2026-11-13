@@ -10,7 +10,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://zela-iyhi.onrender.com"
+        "EXPO_PUBLIC_API_URL": "https://zela-f8rc.onrender.com"
       }
     },
     "production": {
