@@ -231,9 +231,28 @@ EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:8000
 
 > **Qualidade:** `expo-doctor` 18/18 e `tsc` sem erros.
 
-### Evidências (prints das telas) — adicionar em `docs/evidencias/`
+### Evidências (prints das telas) — em `docs/evidencias/prints mobile zela`
 
-`mobile-inicio.jpg`, `mobile-triagem-voz.jpg`, `mobile-triagem-foto.jpg`, `mobile-resultado.jpg`, `mobile-historico.jpg`, `mobile-ajuda.jpg` — **(adicionar aqui)**
+<img width="1080" height="2400" alt="Print-do-app" src="https://github.com/user-attachments/assets/1e6106b8-ba0e-45c2-ac84-e4506f493184" />
+
+<img width="1080" height="2400" alt="Tela-inicial" src="https://github.com/user-attachments/assets/9247224b-937a-4fe4-9d6c-8761b365306e" />
+
+<img width="1080" height="2400" alt="Triagem" src="https://github.com/user-attachments/assets/c60be067-895a-4728-bef9-392453c0a716" />
+
+<img width="1080" height="2400" alt="Meus-resultados-triagem" src="https://github.com/user-attachments/assets/7c198b3b-c194-436e-97f5-dd578e87bcce" />
+
+<img width="1080" height="2400" alt="Meus resultados-exames" src="https://github.com/user-attachments/assets/f1337c0c-33af-4a96-b6e9-9ec0e2f4c92b" />
+
+<img width="1080" height="2400" alt="Mapa" src="https://github.com/user-attachments/assets/574d4ab3-a791-483f-aeca-befaa2d08ad3" />
+
+<img width="1080" height="2400" alt="Mias-opcoes" src="https://github.com/user-attachments/assets/f3ff8f9a-e4b7-47d1-9747-d98b4a5fda78" />
+
+<img width="720" height="1600" alt="Perfil" src="https://github.com/user-attachments/assets/342077de-cc25-4eb6-bd15-efd429c33f8a" />
+
+<img width="1080" height="2400" alt="Ficha-médica" src="https://github.com/user-attachments/assets/db1422b2-e547-455d-a895-2b531902703e" />
+
+<img width="1080" height="2400" alt="Entenda-exame" src="https://github.com/user-attachments/assets/7e74649a-8ab0-430c-a0fd-6160d1dd7e9f" />
+
 
 ### Vídeo pitch (até 3 min): **(adicionar o link aqui)**
 
