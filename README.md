@@ -14,6 +14,18 @@ Princípio que guia o projeto: **não exige smartphone, não exige saber ler e n
 - Arthur Bueno de Oliveira (RM 558396)
 - Victor Magdaleno Marcos (RM 556729)
 
+## 🔗 Acesso ao projeto no ar
+
+A solução está publicada e funcionando na nuvem (API + banco no Render/Supabase, site no Render, app Android via Expo):
+
+| O quê | Link |
+| --- | --- |
+| 🌐 **Site web** (cidadão) | https://zela-h2vx.onrender.com |
+| 📱 **App Android (APK)** | [baixar e instalar](https://expo.dev/accounts/joaovitorcarottaribeiro/projects/zela/builds/6962d804-65b9-4e0a-bbbe-e3b52a9058e9) |
+| 🧠 **API / Swagger** (SOA) | https://zela-f8rc.onrender.com/docs |
+
+> O backend usa o **plano gratuito** do Render: a **primeira** requisição após um tempo ocioso pode levar ~30–60s para "acordar" o servidor; depois responde normalmente.
+
 ---
 
 # Parte 1 — Visão geral (vale para as 3 matérias)
@@ -150,7 +162,7 @@ alembic current -v                                 # mostra a revisão aplicada 
 **Ficha e exame:** `GET|PUT /ficha`, `POST /exame/analisar`, `POST /exame/salvar`, `GET /exame/meus`, `DELETE /exame/{id}`.
 **Recursos persistidos:** CRUD de `/cidadaos`, `/triagens` (abre o encaminhamento), `/encaminhamentos`.
 **Segurança (Cyber):** `/seguranca/scan`, `/seguranca/demo-vazamento`, `/seguranca/indicador`, `/seguranca/auditoria`, `/seguranca/painel`.
-**Infra:** `GET /health`. Documentação automática (Swagger) em `/docs`.
+**Infra:** `GET /health`. Documentação automática (Swagger) em `/docs` — **no ar:** https://zela-f8rc.onrender.com/docs
 
 ### Modelos de IA (todos gratuitos)
 
@@ -188,6 +200,8 @@ cd ia && pytest
 ## 🟩 2. Mobile Development e IOT — pasta `mobile/`
 
 App do cidadão em Expo (React Native + TypeScript + Expo Router), que consome a mesma API da pasta `ia/` e grava o histórico no Supabase pela API.
+
+> 📱 **App publicado (APK):** [baixar e instalar no Android](https://expo.dev/accounts/joaovitorcarottaribeiro/projects/zela/builds/6962d804-65b9-4e0a-bbbe-e3b52a9058e9). Gerado com EAS Build e já apontando para a API na nuvem — funciona sem precisar rodar nada localmente.
 
 ### Como rodar
 
@@ -304,6 +318,7 @@ O módulo `ia/app/seguranca/` + `ia/tests/test_seguranca.py` + `ia/seguranca_sca
 
 Front-end em Next.js (App Router) + TypeScript. É o site onde a pessoa faz a triagem por texto, voz ou foto e recebe o próximo passo. Não é uma das 3 matérias avaliadas aqui, mas faz parte da solução.
 
+- **No ar:** https://zela-h2vx.onrender.com
 - **Rodar:** `cd web && npm install && npm run dev` (abre em `http://localhost:3000`). Configure `NEXT_PUBLIC_API_URL=http://localhost:8000` no `.env.local`.
 - **Páginas:** `/` (início), `/triagem` (os três canais de IA), `/sobre`, `/resultados`, `/exame`.
 - Marca `#4BB9FA`, fonte única (Inter), ícones em SVG, layout responsivo.
