@@ -23,7 +23,7 @@ A solução está publicada e funcionando na nuvem (API + banco no Render/Supaba
 | **Site web** (cidadão) | https://zela-h2vx.onrender.com |
 | **App Android (APK)** | [baixar e instalar](https://expo.dev/accounts/joaovitorcarottaribeiro/projects/zela/builds/6962d804-65b9-4e0a-bbbe-e3b52a9058e9) |
 | **API / Swagger** (SOA) | https://zela-f8rc.onrender.com/docs |
-| **Vídeo Pitch** | https://www.youtube.com/watch?v=tKJ-hPL-gPM** |
+| **Vídeo Pitch** | https://www.youtube.com/watch?v=tKJ-hPL-gPM |
 
 > O backend usa o **plano gratuito** do Render: a **primeira** requisição após um tempo ocioso pode levar ~30–60s para "acordar" o servidor; depois responde normalmente.
 
