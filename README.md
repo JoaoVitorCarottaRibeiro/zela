@@ -304,7 +304,7 @@ O módulo `ia/app/seguranca/` + `ia/tests/test_seguranca.py` + `ia/seguranca_sca
 ### Documentação e vídeo (entrega Cyber)
 
 - **Documentação (PDF):** [`docs/zela-cybersecurity-documentacao.pdf`](docs/zela-cybersecurity-documentacao.pdf) — os 3 pilares (Mapeamento de PII, Taint Analysis e Tradução via IA / Risco Cidadão) com código e evidências.
-- **Vídeo do Dashboard:** **(adicionar o link aqui)** — demonstração do painel de Risco Cidadão (`gravacao-auditoria-cyber`).
+- **Vídeo do Dashboard:** **https://youtu.be/g62WuamiLQg** — demonstração do painel de Risco Cidadão (`gravacao-auditoria-cyber`).
 
 ### Evidências (prints) — em `docs/evidencias/`
 
