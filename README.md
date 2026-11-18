@@ -20,9 +20,10 @@ A solução está publicada e funcionando na nuvem (API + banco no Render/Supaba
 
 | O quê | Link |
 | --- | --- |
-| 🌐 **Site web** (cidadão) | https://zela-h2vx.onrender.com |
-| 📱 **App Android (APK)** | [baixar e instalar](https://expo.dev/accounts/joaovitorcarottaribeiro/projects/zela/builds/6962d804-65b9-4e0a-bbbe-e3b52a9058e9) |
-| 🧠 **API / Swagger** (SOA) | https://zela-f8rc.onrender.com/docs |
+| **Site web** (cidadão) | https://zela-h2vx.onrender.com |
+| **App Android (APK)** | [baixar e instalar](https://expo.dev/accounts/joaovitorcarottaribeiro/projects/zela/builds/6962d804-65b9-4e0a-bbbe-e3b52a9058e9) |
+| **API / Swagger** (SOA) | https://zela-f8rc.onrender.com/docs |
+| **Vídeo Pitch** | https://www.youtube.com/watch?v=tKJ-hPL-gPM |
 
 > O backend usa o **plano gratuito** do Render: a **primeira** requisição após um tempo ocioso pode levar ~30–60s para "acordar" o servidor; depois responde normalmente.
 
@@ -193,7 +194,7 @@ cd ia && pytest
 <img width="800" height="1555" alt="swagger-docs-2" src="https://github.com/user-attachments/assets/eefa60f9-10b0-42c5-96f8-a1f807dc86a4" />
 
 
-### Vídeo pitch (até 3 min): **(adicionar o link aqui)**
+### Vídeo pitch: https://www.youtube.com/watch?v=tKJ-hPL-gPM**
 
 ---
 
@@ -268,7 +269,7 @@ EXPO_PUBLIC_API_URL=http://SEU_IP_LOCAL:8000
 <img width="1080" height="2400" alt="Entenda-exame" src="https://github.com/user-attachments/assets/7e74649a-8ab0-430c-a0fd-6160d1dd7e9f" />
 
 
-### Vídeo pitch (até 3 min): **(adicionar o link aqui)**
+### Vídeo pitch: https://www.youtube.com/watch?v=tKJ-hPL-gPM**
 
 ---
 
@@ -315,7 +316,7 @@ O módulo `ia/app/seguranca/` + `ia/tests/test_seguranca.py` + `ia/seguranca_sca
 <img width="606" height="590" alt="cyber-auditoria" src="https://github.com/user-attachments/assets/1a3e4806-0900-4ff0-b7bd-f56ab0ca92cf" />
 
 
-### Vídeo pitch (até 3 min): **(adicionar o link aqui)**
+### Vídeo pitch: https://www.youtube.com/watch?v=tKJ-hPL-gPM**
 
 ---
 
