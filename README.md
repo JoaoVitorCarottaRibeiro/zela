@@ -300,6 +300,11 @@ Apoio: painel de Risco Cidadão (`/seguranca/painel`), filtro que redige PII nos
 
 O módulo `ia/app/seguranca/` + `ia/tests/test_seguranca.py` + `ia/seguranca_scan.py`.
 
+### Documentação e vídeo (entrega Cyber)
+
+- **Documentação (PDF):** [`docs/zela-cybersecurity-documentacao.pdf`](docs/zela-cybersecurity-documentacao.pdf) — os 3 pilares (Mapeamento de PII, Taint Analysis e Tradução via IA / Risco Cidadão) com código e evidências.
+- **Vídeo do Dashboard:** **(adicionar o link aqui)** — demonstração do painel de Risco Cidadão (`gravacao-auditoria-cyber`).
+
 ### Evidências (prints) — em `docs/evidencias/`
 
 - `cyber-painel.png`: painel de Risco Cidadão com a demonstração.
